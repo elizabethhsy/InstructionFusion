@@ -17,26 +17,37 @@ struct Instr
     vector<string> operands;
 };
 
-struct FileStats
-{
-    float avgCriticalSectionSize;
-    unsigned int totalInstructionNum;
-};
-
-struct File
-{
-    string fileName;
-    FileStats stats;
-    vector<Instr> instructions;
-    vector<CriticalSection> criticalSections;
-
-    void calculateStats();
-};
-
 struct CriticalSection
 {
     unsigned int length;
     Instr* start;
+};
+
+struct FileStats
+{
+public:
+    File const& file;
+    vector<CriticalSection> criticalSections;
+
+    FileStats(File const& file);
+private:
+    float avgCriticalSectionSize;
+    unsigned int totalInstructionNum;
+    
+    float getAvgCriticalSectionSize();
+    unsigned int getTotalInstructionNum();
+};
+
+struct File
+{
+public:
+    string fileName;
+    FileStats stats;
+    vector<Instr> instructions;
+
+    File(string filePath, string fileName);
+private:
+    void calculateStats();
 };
 
 struct Experiment
