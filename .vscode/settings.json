@@ -1,0 +1,7 @@
+{
+    "cph.general.saveLocation": "",
+    "files.associations": {
+        "*.cpp": "cpp",
+        "vector": "cpp"
+    }
+}

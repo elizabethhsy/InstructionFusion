@@ -1,0 +1,10 @@
+cp /net/archive/export/cheri_traces/spec_static_test_trace/run/spec-riscv64-purecap-401.bzip2-7beed321-5754-4c37-88b1-d64073cf4e6a/drcachesim-results/instr_count/instr_counts.csv /media/jdw57/mule/bzip2.counts
+cp  /net/archive/export/cheri_traces/spec_static_test_trace/run/spec-riscv64-purecap-429.mcf-9192cc5f-04fd-48e4-be73-f425741bd873/drcachesim-results/instr_count/instr_counts.csv /media/jdw57/mule/mcf.counts
+cp  /net/archive/export/cheri_traces/spec_static_test_trace/run/spec-riscv64-purecap-445.gobmk-764b0512-6e0d-4d6f-90cf-7f08e893c770/drcachesim-results/instr_count/instr_counts.csv /media/jdw57/mule/gobmk.counts
+cp  /net/archive/export/cheri_traces/spec_static_test_trace/run/spec-riscv64-purecap-456.hmmer-a3b05194-0597-4678-908d-b06373902843/drcachesim-results/instr_count/instr_counts.csv /media/jdw57/mule/hmmer.counts
+cp  /net/archive/export/cheri_traces/spec_static_test_trace/run/spec-riscv64-purecap-458.sjeng-32629920-9e88-4a5a-ba55-b9be007ac9b8/drcachesim-results/instr_count/instr_counts.csv /media/jdw57/mule/sjeng.counts
+cp  /net/archive/export/cheri_traces/spec_static_test_trace/run/spec-riscv64-purecap-462.libquantum-d6e3f479-f6a7-47fc-9262-ea921b0e93f7/drcachesim-results/instr_count/instr_counts.csv /media/jdw57/mule/libquantum.counts
+cp  /net/archive/export/cheri_traces/spec_static_test_trace/run/spec-riscv64-purecap-464.h264ref-20476295-a0db-4444-ba0b-4c483f34685b/drcachesim-results/instr_count/instr_counts.csv /media/jdw57/mule/h264ref.counts
+cp  /net/archive/export/cheri_traces/spec_static_test_trace/run/spec-riscv64-purecap-471.omnetpp-1cc46a1c-2ed2-4216-90a5-0f51e345b698/drcachesim-results/instr_count/instr_counts.csv /media/jdw57/mule/omnetpp.counts
+cp  /net/archive/export/cheri_traces/spec_static_test_trace/run/spec-riscv64-purecap-473.astar-b199e53e-ac3b-429e-9b0a-10aab98660da/drcachesim-results/instr_count/instr_counts.csv /media/jdw57/mule/astar.counts
+cp /net/archive/export/cheri_traces/spec_static_test_trace/run/spec-riscv64-purecap-483.xalancbmk-73003052-0980-46b3-b4bd-8196d02c6988/drcachesim-results/instr_count/instr_counts.csv /media/jdw57/mule/xalancbmk.counts
