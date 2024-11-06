@@ -2,6 +2,7 @@
 
 #include "macros.h"
 
+#include <fmt/core.h>
 #include <stdint.h>
 #include <string>
 #include <vector>
@@ -19,6 +20,11 @@ struct Instr
     vector<string> operands;
 
     static Instr parseInstruction(string const& str);
+    static bool isContiguous(Instr const& prevInstr, Instr const& nextInstr)
+    {
+        return (nextInstr.addr - prevInstr.addr == 2 ||
+            nextInstr.addr - prevInstr.addr == 4);
+    }
 
     bool operator<(const Instr& other) const {
         return addr < other.addr;
@@ -49,7 +55,6 @@ private:
     bool initialised;
     float avgCriticalSectionSize;
     unsigned int totalInstructionNum;
-    static const vector<string> delimiters;
 
     void constructCriticalSections(vector<string> delimiters);
     float calculateAvgCriticalSectionSize();
@@ -67,6 +72,16 @@ public:
     bool fileExists();
 private:
     void loadFromCSV();
+    bool checkContiguousInstructions();
+    string getNameFromPath(string const& filepath);
+};
+
+struct FusionCalculator
+{
+    uint calculateFusion(
+        File const& file,
+        vector<string> const& delimiters
+    );
 };
 
 struct Experiment
