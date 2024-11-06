@@ -1,10 +1,8 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/fusion.dir/src/csvParsing.cpp.o"
-  "CMakeFiles/fusion.dir/src/csvParsing.cpp.o.d"
-  "CMakeFiles/fusion.dir/src/dataRepresentation.cpp.o"
-  "CMakeFiles/fusion.dir/src/dataRepresentation.cpp.o.d"
-  "CMakeFiles/fusion.dir/src/main.cpp.o"
-  "CMakeFiles/fusion.dir/src/main.cpp.o.d"
+  "CMakeFiles/fusion.dir/src/dataRepresentation.cxx.o"
+  "CMakeFiles/fusion.dir/src/dataRepresentation.cxx.o.d"
+  "CMakeFiles/fusion.dir/src/main.cxx.o"
+  "CMakeFiles/fusion.dir/src/main.cxx.o.d"
   "fusion"
   "fusion.pdb"
 )

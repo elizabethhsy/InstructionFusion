@@ -1,5 +1,7 @@
 #pragma once
 
+#include "macros.h"
+
 #include <stdint.h>
 #include <string>
 #include <vector>
@@ -15,39 +17,56 @@ struct Instr
     uint64_t count;
     string instr;
     vector<string> operands;
+
+    static Instr parseInstruction(string const& str);
+
+    bool operator<(const Instr& other) const {
+        return addr < other.addr;
+    }
 };
 
 struct CriticalSection
 {
-    unsigned int length;
+    uint length;
+    uint count;
     Instr* start;
+
+    CriticalSection(uint length, uint count, Instr* start);
 };
 
+struct File;
 struct FileStats
 {
 public:
-    File const& file;
-    vector<CriticalSection> criticalSections;
+    File const* file; // read only
+    vector<unique_ptr<CriticalSection>> criticalSections;
 
-    FileStats(File const& file);
+    FileStats(File const* file);
+
+    void calculateStats();
+    string toString();
 private:
+    bool initialised;
     float avgCriticalSectionSize;
     unsigned int totalInstructionNum;
-    
-    float getAvgCriticalSectionSize();
-    unsigned int getTotalInstructionNum();
+    static const vector<string> delimiters;
+
+    void constructCriticalSections(vector<string> delimiters);
+    float calculateAvgCriticalSectionSize();
 };
 
 struct File
 {
 public:
     string fileName;
-    FileStats stats;
+    string fullPath;
+    unique_ptr<FileStats> stats;
     vector<Instr> instructions;
 
-    File(string filePath, string fileName);
+    File(string filename);
+    bool fileExists();
 private:
-    void calculateStats();
+    void loadFromCSV();
 };
 
 struct Experiment
@@ -57,7 +76,7 @@ public:
     // csv files
     Experiment(vector<string> filenames);
 private:
-    vector<File> files;
+    vector<unique_ptr<File>> files;
 };
 
 }

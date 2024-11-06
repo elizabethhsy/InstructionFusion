@@ -129,77 +129,53 @@ fusion/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/fusion.dir/build.make CMakeFiles/fusion.dir/build
 .PHONY : fusion/fast
 
-src/csvParsing.o: src/csvParsing.cpp.o
-.PHONY : src/csvParsing.o
-
-# target to build an object file
-src/csvParsing.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/fusion.dir/build.make CMakeFiles/fusion.dir/src/csvParsing.cpp.o
-.PHONY : src/csvParsing.cpp.o
-
-src/csvParsing.i: src/csvParsing.cpp.i
-.PHONY : src/csvParsing.i
-
-# target to preprocess a source file
-src/csvParsing.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/fusion.dir/build.make CMakeFiles/fusion.dir/src/csvParsing.cpp.i
-.PHONY : src/csvParsing.cpp.i
-
-src/csvParsing.s: src/csvParsing.cpp.s
-.PHONY : src/csvParsing.s
-
-# target to generate assembly for a file
-src/csvParsing.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/fusion.dir/build.make CMakeFiles/fusion.dir/src/csvParsing.cpp.s
-.PHONY : src/csvParsing.cpp.s
-
-src/dataRepresentation.o: src/dataRepresentation.cpp.o
+src/dataRepresentation.o: src/dataRepresentation.cxx.o
 .PHONY : src/dataRepresentation.o
 
 # target to build an object file
-src/dataRepresentation.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/fusion.dir/build.make CMakeFiles/fusion.dir/src/dataRepresentation.cpp.o
-.PHONY : src/dataRepresentation.cpp.o
+src/dataRepresentation.cxx.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/fusion.dir/build.make CMakeFiles/fusion.dir/src/dataRepresentation.cxx.o
+.PHONY : src/dataRepresentation.cxx.o
 
-src/dataRepresentation.i: src/dataRepresentation.cpp.i
+src/dataRepresentation.i: src/dataRepresentation.cxx.i
 .PHONY : src/dataRepresentation.i
 
 # target to preprocess a source file
-src/dataRepresentation.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/fusion.dir/build.make CMakeFiles/fusion.dir/src/dataRepresentation.cpp.i
-.PHONY : src/dataRepresentation.cpp.i
+src/dataRepresentation.cxx.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/fusion.dir/build.make CMakeFiles/fusion.dir/src/dataRepresentation.cxx.i
+.PHONY : src/dataRepresentation.cxx.i
 
-src/dataRepresentation.s: src/dataRepresentation.cpp.s
+src/dataRepresentation.s: src/dataRepresentation.cxx.s
 .PHONY : src/dataRepresentation.s
 
 # target to generate assembly for a file
-src/dataRepresentation.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/fusion.dir/build.make CMakeFiles/fusion.dir/src/dataRepresentation.cpp.s
-.PHONY : src/dataRepresentation.cpp.s
+src/dataRepresentation.cxx.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/fusion.dir/build.make CMakeFiles/fusion.dir/src/dataRepresentation.cxx.s
+.PHONY : src/dataRepresentation.cxx.s
 
-src/main.o: src/main.cpp.o
+src/main.o: src/main.cxx.o
 .PHONY : src/main.o
 
 # target to build an object file
-src/main.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/fusion.dir/build.make CMakeFiles/fusion.dir/src/main.cpp.o
-.PHONY : src/main.cpp.o
+src/main.cxx.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/fusion.dir/build.make CMakeFiles/fusion.dir/src/main.cxx.o
+.PHONY : src/main.cxx.o
 
-src/main.i: src/main.cpp.i
+src/main.i: src/main.cxx.i
 .PHONY : src/main.i
 
 # target to preprocess a source file
-src/main.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/fusion.dir/build.make CMakeFiles/fusion.dir/src/main.cpp.i
-.PHONY : src/main.cpp.i
+src/main.cxx.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/fusion.dir/build.make CMakeFiles/fusion.dir/src/main.cxx.i
+.PHONY : src/main.cxx.i
 
-src/main.s: src/main.cpp.s
+src/main.s: src/main.cxx.s
 .PHONY : src/main.s
 
 # target to generate assembly for a file
-src/main.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/fusion.dir/build.make CMakeFiles/fusion.dir/src/main.cpp.s
-.PHONY : src/main.cpp.s
+src/main.cxx.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/fusion.dir/build.make CMakeFiles/fusion.dir/src/main.cxx.s
+.PHONY : src/main.cxx.s
 
 # Help Target
 help:
@@ -210,9 +186,6 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... fusion"
-	@echo "... src/csvParsing.o"
-	@echo "... src/csvParsing.i"
-	@echo "... src/csvParsing.s"
 	@echo "... src/dataRepresentation.o"
 	@echo "... src/dataRepresentation.i"
 	@echo "... src/dataRepresentation.s"

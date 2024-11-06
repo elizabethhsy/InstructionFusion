@@ -4,10 +4,15 @@ project(fusion)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-include_directories(include)
+file(GLOB SOURCES "src/*.cxx")
+add_executable(${PROJECT_NAME} ${SOURCES})
 
 find_package(fmt REQUIRED)
-target_link_libraries(${PROJECT_NAME} PRIVATE fmt::fmt)
+find_package(Boost REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE fmt::fmt ${Boost_LIBRARIES})
 
-file(GLOB SOURCES "src/*.cpp")
-add_executable(${PROJECT_NAME} ${SOURCES})
+target_include_directories(
+    ${PROJECT_NAME} PRIVATE
+    include
+    ${Boost_INCLUDE_DIRS}
+)
