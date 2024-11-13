@@ -35,9 +35,9 @@ struct CriticalSection
 {
     uint length;
     uint count;
-    Instr* start;
+    const Instr* start;
 
-    CriticalSection(uint length, uint count, Instr* start);
+    CriticalSection(uint length, uint count, const Instr* start);
 };
 
 struct File;
@@ -48,16 +48,17 @@ public:
     vector<unique_ptr<CriticalSection>> criticalSections;
 
     FileStats(File const* file);
+    float avgCriticalSectionSize;
+    uint64_t totalInstructionNum;
 
     void calculateStats();
     string toString();
 private:
     bool initialised;
-    float avgCriticalSectionSize;
-    unsigned int totalInstructionNum;
 
     void constructCriticalSections(vector<string> delimiters);
     float calculateAvgCriticalSectionSize();
+    uint64_t calculateTotalInstructionNum();
 };
 
 struct File
@@ -74,24 +75,6 @@ private:
     void loadFromCSV();
     bool checkContiguousInstructions();
     string getNameFromPath(string const& filepath);
-};
-
-struct FusionCalculator
-{
-    uint calculateFusion(
-        File const& file,
-        vector<string> const& delimiters
-    );
-};
-
-struct Experiment
-{
-public:
-    // constructor - takes in list of file names and parses the corresponding
-    // csv files
-    Experiment(vector<string> filenames);
-private:
-    vector<unique_ptr<File>> files;
 };
 
 }

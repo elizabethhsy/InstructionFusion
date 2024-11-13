@@ -153,6 +153,54 @@ src/dataRepresentation.cxx.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/fusion.dir/build.make CMakeFiles/fusion.dir/src/dataRepresentation.cxx.s
 .PHONY : src/dataRepresentation.cxx.s
 
+src/experiment.o: src/experiment.cxx.o
+.PHONY : src/experiment.o
+
+# target to build an object file
+src/experiment.cxx.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/fusion.dir/build.make CMakeFiles/fusion.dir/src/experiment.cxx.o
+.PHONY : src/experiment.cxx.o
+
+src/experiment.i: src/experiment.cxx.i
+.PHONY : src/experiment.i
+
+# target to preprocess a source file
+src/experiment.cxx.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/fusion.dir/build.make CMakeFiles/fusion.dir/src/experiment.cxx.i
+.PHONY : src/experiment.cxx.i
+
+src/experiment.s: src/experiment.cxx.s
+.PHONY : src/experiment.s
+
+# target to generate assembly for a file
+src/experiment.cxx.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/fusion.dir/build.make CMakeFiles/fusion.dir/src/experiment.cxx.s
+.PHONY : src/experiment.cxx.s
+
+src/fusion.o: src/fusion.cxx.o
+.PHONY : src/fusion.o
+
+# target to build an object file
+src/fusion.cxx.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/fusion.dir/build.make CMakeFiles/fusion.dir/src/fusion.cxx.o
+.PHONY : src/fusion.cxx.o
+
+src/fusion.i: src/fusion.cxx.i
+.PHONY : src/fusion.i
+
+# target to preprocess a source file
+src/fusion.cxx.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/fusion.dir/build.make CMakeFiles/fusion.dir/src/fusion.cxx.i
+.PHONY : src/fusion.cxx.i
+
+src/fusion.s: src/fusion.cxx.s
+.PHONY : src/fusion.s
+
+# target to generate assembly for a file
+src/fusion.cxx.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/fusion.dir/build.make CMakeFiles/fusion.dir/src/fusion.cxx.s
+.PHONY : src/fusion.cxx.s
+
 src/main.o: src/main.cxx.o
 .PHONY : src/main.o
 
@@ -189,6 +237,12 @@ help:
 	@echo "... src/dataRepresentation.o"
 	@echo "... src/dataRepresentation.i"
 	@echo "... src/dataRepresentation.s"
+	@echo "... src/experiment.o"
+	@echo "... src/experiment.i"
+	@echo "... src/experiment.s"
+	@echo "... src/fusion.o"
+	@echo "... src/fusion.i"
+	@echo "... src/fusion.s"
 	@echo "... src/main.o"
 	@echo "... src/main.i"
 	@echo "... src/main.s"

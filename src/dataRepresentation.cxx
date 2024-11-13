@@ -7,6 +7,7 @@
 #include <filesystem>
 #include <fmt/core.h>
 #include <fstream>
+#include <iterator>
 #include <regex>
 #include <sstream>
 #include <vector>
@@ -47,7 +48,7 @@ Instr Instr::parseInstruction(string const& str)
     return instr;
 }
 
-CriticalSection::CriticalSection(uint length, uint count, Instr* start)
+CriticalSection::CriticalSection(uint length, uint count, const Instr* start)
     : length(length), count(count), start(start) {}
 
 FileStats::FileStats(File const* file)
@@ -91,7 +92,7 @@ void FileStats::calculateStats()
     );
 
     avgCriticalSectionSize = calculateAvgCriticalSectionSize();
-    totalInstructionNum = file->instructions.size();
+    totalInstructionNum = calculateTotalInstructionNum();
     initialised = true;
 }
 
@@ -100,7 +101,7 @@ void FileStats::constructCriticalSections(vector<string> delimiters)
     uint length, count;
     bool startOfCriticalSection;
 
-    vector<Instr> instructions = file->instructions;
+    auto& instructions = file->instructions;
     if (instructions.empty()) {
         LOG_ERROR(
             fmt::format(
@@ -121,7 +122,7 @@ void FileStats::constructCriticalSections(vector<string> delimiters)
     // instruction, then record it as the end of a critical section, and
     // record the length
     reset();
-    Instr* startInstr;
+    const Instr* startInstr;
     int n = instructions.size();
     for (int i = 0; i < n; i++) {
         auto const& prevInstruction = instructions[max(i-1, 0)];
@@ -173,6 +174,17 @@ float FileStats::calculateAvgCriticalSectionSize()
         count += section->count;
     }
     return total/count;
+}
+
+uint64_t FileStats::calculateTotalInstructionNum()
+{
+    uint64_t total = 0;
+
+    for (auto const& instruction : file->instructions) {
+        total += instruction.count;
+    }
+
+    return total;
 }
 
 File::File(string filepath)
@@ -241,69 +253,6 @@ bool File::checkContiguousInstructions()
         }
     }
     return contiguous;
-}
-
-uint FusionCalculator::calculateFusion(
-    File const& file,
-    vector<string> const& fusable
-)
-{
-    uint count = 0;
-    for (auto const& criticalSection : file.stats->criticalSections) {
-        count++; // start of critical section
-        for (int i = 1; i < criticalSection->length; i++) {
-            auto const& instruction = *(criticalSection->start + i);
-            if (find(fusable.begin(), fusable.end(), instruction.instr)
-                == fusable.end())
-            {
-                count++;
-            }
-        }
-    }
-    return count;
-}
-
-Experiment::Experiment(vector<string> filepaths)
-{
-    // create the necessary file objects
-    for (auto filepath : filepaths) {
-        files.push_back(make_unique<File>(filepath));
-    }
-
-    // for each file, calculate the statistics and print them out
-    for (auto const& file : files) {
-        file->stats->calculateStats();
-
-        // print stats
-        LOG_INFO(
-            fmt::format(
-                "stats for file {}: {}",
-                file->fileName,
-                file->stats->toString()
-            )
-        );
-    }
-
-    FusionCalculator calculator;
-    // for each file, print out the number of instructions fused
-    for (auto const& file : files) {
-        uint result = calculator.calculateFusion(
-            *file,
-            arithmeticInstructions
-        );
-        float total = file->instructions.size();
-        LOG_INFO(
-            fmt::format(
-                "file {}: number of instructions changed from {} to {}, "
-                "difference={}, percentage={}%",
-                file->fileName,
-                total,
-                result,
-                total-result,
-                100*(total-result)/total
-            )
-        );
-    }
 }
 
 }

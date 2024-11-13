@@ -1,4 +1,4 @@
-#include "dataRepresentation.h"
+#include "experiment.h"
 
 #include <fmt/core.h>
 #include <string>
@@ -28,5 +28,6 @@ int main(int argc, char const *argv[])
     }
 
     fusion::Experiment experiment(fileNames);
+    experiment.run();
     return 0;
 }
