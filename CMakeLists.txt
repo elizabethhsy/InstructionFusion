@@ -5,14 +5,21 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 file(GLOB SOURCES "src/*.cxx")
-add_executable(${PROJECT_NAME} ${SOURCES})
+add_library(${PROJECT_NAME} ${SOURCES})
 
 find_package(fmt REQUIRED)
 find_package(Boost REQUIRED)
-target_link_libraries(${PROJECT_NAME} PRIVATE fmt::fmt ${Boost_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} PRIVATE
+    fmt::fmt ${Boost_LIBRARIES}
+)
 
 target_include_directories(
-    ${PROJECT_NAME} PRIVATE
+    ${PROJECT_NAME} PUBLIC
     include
     ${Boost_INCLUDE_DIRS}
 )
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+
+add_subdirectory(exec)
+add_subdirectory(tests)

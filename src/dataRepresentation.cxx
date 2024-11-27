@@ -1,3 +1,4 @@
+#include "csvHandler.h"
 #include "dataRepresentation.h"
 #include "instructions.h"
 #include "macros.h"
@@ -46,6 +47,22 @@ Instr Instr::parseInstruction(string const& str)
     }
 
     return instr;
+}
+
+string Instr::toString() const
+{
+    return fmt::format(
+        "Instr: addr={:#04x}, count={}, instr={}, operands={}",
+        addr,
+        count,
+        instr,
+        boost::algorithm::join(operands, ", ")
+    );
+}
+
+ostream& operator<<(ostream& os, Instr const& instr) {
+    os << instr.toString();
+    return os;
 }
 
 CriticalSection::CriticalSection(uint length, uint count, const Instr* start)
@@ -133,6 +150,7 @@ void FileStats::constructCriticalSections(vector<string> delimiters)
 
         if (startOfCriticalSection) {
             startInstr = &instruction;
+            startOfCriticalSection = false;
         }
         if (instruction.count < count) {
             if (count != UINT_MAX) {
@@ -152,10 +170,18 @@ void FileStats::constructCriticalSections(vector<string> delimiters)
         int diff = abs(static_cast<int>(instruction.count - nextInstruction.count));
         if (
             ((find(delimiters.begin(), delimiters.end(), instruction.instr)
-            != delimiters.end())  && diff >= 1)||
-            !Instr::isContiguous(prevInstruction, instruction)
+            != delimiters.end())  && diff >= 1) ||
+            (!Instr::isContiguous(prevInstruction, instruction) && i > 0) ||
+            (i == n-1) // end of the file
             )
         {
+            LOG_DEBUG(
+                fmt::format(
+                    "start_instruction={}\nend_instruction={}\n",
+                    startInstr->toString(),
+                    instruction.toString()
+                )
+            );
             // record new critical section
             criticalSections.push_back(
                 make_unique<CriticalSection>(length, count, startInstr)
@@ -196,38 +222,16 @@ File::File(string filepath)
     // otherwise filePath should refer to the absolute path which the file is in
     // if the file doesn't exist, then we throw an exception. Otherwise, we read
     // the CSV and populate the instruction vector.
-    loadFromCSV();
+
+    instructions = CSVHandler::loadInstructionsFromCSV(fullPath);
     stats = make_unique<FileStats>(this);
+    stats->calculateStats();
 }
 
 string File::getNameFromPath(string const& filepath)
 {
     filesystem::path path(filepath);
     return path.stem().string();
-}
-
-void File::loadFromCSV()
-{
-    ifstream file(fullPath);
-
-    if (!file.is_open()) {
-        LOG_ERROR(
-            fmt::format(
-                "{} cannot be opened, check that the file exists.",
-                fullPath
-            )
-        );
-    }
-
-    string line;
-    // ignore header line
-    getline(file, line);
-    while (getline(file, line)) {
-        Instr instr = Instr::parseInstruction(line);
-        instructions.push_back(move(instr));
-    }
-
-    sort(instructions.begin(), instructions.end());
 }
 
 bool File::checkContiguousInstructions()

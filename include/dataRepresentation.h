@@ -2,6 +2,7 @@
 
 #include "macros.h"
 
+#include <boost/algorithm/string/join.hpp>
 #include <fmt/core.h>
 #include <stdint.h>
 #include <string>
@@ -19,6 +20,8 @@ struct Instr
     string instr;
     vector<string> operands;
 
+    string toString() const;
+
     static Instr parseInstruction(string const& str);
     static bool isContiguous(Instr const& prevInstr, Instr const& nextInstr)
     {
@@ -26,10 +29,20 @@ struct Instr
             nextInstr.addr - prevInstr.addr == 4);
     }
 
-    bool operator<(const Instr& other) const {
+    bool operator<(Instr const& other) const {
         return addr < other.addr;
     }
+
+    bool operator==(Instr const& other) const {
+        bool operands_equal = true;
+        for (int i = 0; i < operands.size(); i++) {
+            operands_equal &= (operands[i] == other.operands[i]);
+        }
+        return addr == other.addr && count == other.count &&
+            instr == other.instr && operands_equal;
+    }
 };
+ostream& operator<<(ostream& os, Instr const& instr);
 
 struct CriticalSection
 {
@@ -51,8 +64,8 @@ public:
     float avgCriticalSectionSize;
     uint64_t totalInstructionNum;
 
-    void calculateStats();
     string toString();
+    void calculateStats();
 private:
     bool initialised;
 
@@ -72,7 +85,6 @@ public:
     File(string filename);
     bool fileExists();
 private:
-    void loadFromCSV();
     bool checkContiguousInstructions();
     string getNameFromPath(string const& filepath);
 };

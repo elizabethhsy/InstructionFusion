@@ -17,8 +17,6 @@ Experiment::Experiment(vector<string> filepaths)
 
     // for each file, calculate the statistics and print them out
     for (auto const& file : files) {
-        file->stats->calculateStats();
-
         // print stats
         LOG_INFO(
             fmt::format(
@@ -67,23 +65,27 @@ void Experiment::run()
 {
     FusionCalculator calculator;
 
-    auto run_experiment = [&](string title, vector<string> fusable) {
+    auto run_experiment = [&](string title, FusionConfig config) {
         LOG_INFO(title);
         for (auto const& file : files) {
-            uint64_t result = calculator.calculateFusion(
+            FusionStats result = calculator.calculateFusion(
                 *file,
-                fusable
+                config
             );
-            uint64_t total = file->stats->totalInstructionNum;
+
+            auto const& totalBefore = result.totalInstructions;
+            auto const& totalAfter = result.instructionsAfterFuse;
+
             LOG_INFO(
                 fmt::format(
                     "file {}: number of instructions changed from {} to {}, "
-                    "difference={}, percentage={}%",
+                    "difference={}, percentage={}%, avg_fusion_length={}",
                     file->fileName,
-                    file->stats->totalInstructionNum,
-                    result,
-                    total-result,
-                    100*(total-result)/float(total)
+                    totalBefore,
+                    totalAfter,
+                    totalBefore-totalAfter,
+                    100*(totalBefore-totalAfter)/float(totalBefore),
+                    result.getAvgFusionLength()
                 )
             );
         }
@@ -103,12 +105,7 @@ void Experiment::run()
         memoryInstructions.begin(),
         memoryInstructions.end()
     );
-    run_experiment("ARITHMETIC + MEMORY INSTRUCTIONS", arithmetic_memory);
-
-    run_experiment("ARITHMETIC INSTRUCTIONS", arithmeticInstructions);
-
-    run_experiment("MEMORY INSTRUCTIONS", memoryInstructions);
-
+    
     vector<string> arithmetic_branch;
     arithmetic_branch.reserve(
         arithmeticInstructions.size() + branchInstructions.size()
@@ -123,7 +120,42 @@ void Experiment::run()
         branchInstructions.begin(),
         branchInstructions.end()
     );
-    run_experiment("ARITHMETIC + BRANCH INSTRUCTIONS", arithmetic_branch);
+
+    run_experiment(
+        "ARITHMETIC + MEMORY INSTRUCTIONS",
+        FusionConfig{ .fusable = arithmetic_memory }
+    );
+
+    run_experiment(
+        "ARITHMETIC INSTRUCTIONS",
+        FusionConfig{ .fusable = arithmeticInstructions }
+    );
+
+    run_experiment(
+        "MEMORY INSTRUCTIONS",
+        FusionConfig{ .fusable = memoryInstructions }
+    );
+
+    run_experiment(
+        "ARITHMETIC + BRANCH INSTRUCTIONS",
+        FusionConfig{ .fusable = arithmetic_branch }
+    );
+
+    run_experiment(
+        "ARITHMETIC + END MEMORY",
+        FusionConfig{
+            .fusable = arithmeticInstructions,
+            .end = memoryInstructions
+        }
+    );
+
+    run_experiment(
+        "ARITHMETIC + END BRANCH",
+        FusionConfig{
+            .fusable = arithmeticInstructions,
+            .end = branchInstructions
+        }
+    );
 }
 
 } // namespace fusion

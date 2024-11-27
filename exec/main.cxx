@@ -1,4 +1,4 @@
-#include "experiment.h"
+#include <experiment.h>
 
 #include <fmt/core.h>
 #include <string>
@@ -6,7 +6,6 @@
 
 int main(int argc, char const *argv[])
 {
-    /* code */
     std::vector<std::string> fileNames = {
         "astar",
         "bzip2",

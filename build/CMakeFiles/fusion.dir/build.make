@@ -69,10 +69,24 @@ include CMakeFiles/fusion.dir/progress.make
 # Include the compile flags for this target's objects.
 include CMakeFiles/fusion.dir/flags.make
 
+CMakeFiles/fusion.dir/src/csvHandler.cxx.o: CMakeFiles/fusion.dir/flags.make
+CMakeFiles/fusion.dir/src/csvHandler.cxx.o: /Users/elizabeth/Desktop/Cambridge/Dissertation/src/csvHandler.cxx
+CMakeFiles/fusion.dir/src/csvHandler.cxx.o: CMakeFiles/fusion.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/elizabeth/Desktop/Cambridge/Dissertation/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/fusion.dir/src/csvHandler.cxx.o"
+	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/fusion.dir/src/csvHandler.cxx.o -MF CMakeFiles/fusion.dir/src/csvHandler.cxx.o.d -o CMakeFiles/fusion.dir/src/csvHandler.cxx.o -c /Users/elizabeth/Desktop/Cambridge/Dissertation/src/csvHandler.cxx
+
+CMakeFiles/fusion.dir/src/csvHandler.cxx.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/fusion.dir/src/csvHandler.cxx.i"
+	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/elizabeth/Desktop/Cambridge/Dissertation/src/csvHandler.cxx > CMakeFiles/fusion.dir/src/csvHandler.cxx.i
+
+CMakeFiles/fusion.dir/src/csvHandler.cxx.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/fusion.dir/src/csvHandler.cxx.s"
+	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/elizabeth/Desktop/Cambridge/Dissertation/src/csvHandler.cxx -o CMakeFiles/fusion.dir/src/csvHandler.cxx.s
+
 CMakeFiles/fusion.dir/src/dataRepresentation.cxx.o: CMakeFiles/fusion.dir/flags.make
 CMakeFiles/fusion.dir/src/dataRepresentation.cxx.o: /Users/elizabeth/Desktop/Cambridge/Dissertation/src/dataRepresentation.cxx
 CMakeFiles/fusion.dir/src/dataRepresentation.cxx.o: CMakeFiles/fusion.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/elizabeth/Desktop/Cambridge/Dissertation/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/fusion.dir/src/dataRepresentation.cxx.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/elizabeth/Desktop/Cambridge/Dissertation/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/fusion.dir/src/dataRepresentation.cxx.o"
 	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/fusion.dir/src/dataRepresentation.cxx.o -MF CMakeFiles/fusion.dir/src/dataRepresentation.cxx.o.d -o CMakeFiles/fusion.dir/src/dataRepresentation.cxx.o -c /Users/elizabeth/Desktop/Cambridge/Dissertation/src/dataRepresentation.cxx
 
 CMakeFiles/fusion.dir/src/dataRepresentation.cxx.i: cmake_force
@@ -86,7 +100,7 @@ CMakeFiles/fusion.dir/src/dataRepresentation.cxx.s: cmake_force
 CMakeFiles/fusion.dir/src/experiment.cxx.o: CMakeFiles/fusion.dir/flags.make
 CMakeFiles/fusion.dir/src/experiment.cxx.o: /Users/elizabeth/Desktop/Cambridge/Dissertation/src/experiment.cxx
 CMakeFiles/fusion.dir/src/experiment.cxx.o: CMakeFiles/fusion.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/elizabeth/Desktop/Cambridge/Dissertation/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/fusion.dir/src/experiment.cxx.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/elizabeth/Desktop/Cambridge/Dissertation/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/fusion.dir/src/experiment.cxx.o"
 	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/fusion.dir/src/experiment.cxx.o -MF CMakeFiles/fusion.dir/src/experiment.cxx.o.d -o CMakeFiles/fusion.dir/src/experiment.cxx.o -c /Users/elizabeth/Desktop/Cambridge/Dissertation/src/experiment.cxx
 
 CMakeFiles/fusion.dir/src/experiment.cxx.i: cmake_force
@@ -100,7 +114,7 @@ CMakeFiles/fusion.dir/src/experiment.cxx.s: cmake_force
 CMakeFiles/fusion.dir/src/fusion.cxx.o: CMakeFiles/fusion.dir/flags.make
 CMakeFiles/fusion.dir/src/fusion.cxx.o: /Users/elizabeth/Desktop/Cambridge/Dissertation/src/fusion.cxx
 CMakeFiles/fusion.dir/src/fusion.cxx.o: CMakeFiles/fusion.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/elizabeth/Desktop/Cambridge/Dissertation/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/fusion.dir/src/fusion.cxx.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/elizabeth/Desktop/Cambridge/Dissertation/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/fusion.dir/src/fusion.cxx.o"
 	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/fusion.dir/src/fusion.cxx.o -MF CMakeFiles/fusion.dir/src/fusion.cxx.o.d -o CMakeFiles/fusion.dir/src/fusion.cxx.o -c /Users/elizabeth/Desktop/Cambridge/Dissertation/src/fusion.cxx
 
 CMakeFiles/fusion.dir/src/fusion.cxx.i: cmake_force
@@ -111,42 +125,28 @@ CMakeFiles/fusion.dir/src/fusion.cxx.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/fusion.dir/src/fusion.cxx.s"
 	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/elizabeth/Desktop/Cambridge/Dissertation/src/fusion.cxx -o CMakeFiles/fusion.dir/src/fusion.cxx.s
 
-CMakeFiles/fusion.dir/src/main.cxx.o: CMakeFiles/fusion.dir/flags.make
-CMakeFiles/fusion.dir/src/main.cxx.o: /Users/elizabeth/Desktop/Cambridge/Dissertation/src/main.cxx
-CMakeFiles/fusion.dir/src/main.cxx.o: CMakeFiles/fusion.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/elizabeth/Desktop/Cambridge/Dissertation/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/fusion.dir/src/main.cxx.o"
-	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/fusion.dir/src/main.cxx.o -MF CMakeFiles/fusion.dir/src/main.cxx.o.d -o CMakeFiles/fusion.dir/src/main.cxx.o -c /Users/elizabeth/Desktop/Cambridge/Dissertation/src/main.cxx
-
-CMakeFiles/fusion.dir/src/main.cxx.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/fusion.dir/src/main.cxx.i"
-	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/elizabeth/Desktop/Cambridge/Dissertation/src/main.cxx > CMakeFiles/fusion.dir/src/main.cxx.i
-
-CMakeFiles/fusion.dir/src/main.cxx.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/fusion.dir/src/main.cxx.s"
-	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/elizabeth/Desktop/Cambridge/Dissertation/src/main.cxx -o CMakeFiles/fusion.dir/src/main.cxx.s
-
 # Object files for target fusion
 fusion_OBJECTS = \
+"CMakeFiles/fusion.dir/src/csvHandler.cxx.o" \
 "CMakeFiles/fusion.dir/src/dataRepresentation.cxx.o" \
 "CMakeFiles/fusion.dir/src/experiment.cxx.o" \
-"CMakeFiles/fusion.dir/src/fusion.cxx.o" \
-"CMakeFiles/fusion.dir/src/main.cxx.o"
+"CMakeFiles/fusion.dir/src/fusion.cxx.o"
 
 # External object files for target fusion
 fusion_EXTERNAL_OBJECTS =
 
-fusion: CMakeFiles/fusion.dir/src/dataRepresentation.cxx.o
-fusion: CMakeFiles/fusion.dir/src/experiment.cxx.o
-fusion: CMakeFiles/fusion.dir/src/fusion.cxx.o
-fusion: CMakeFiles/fusion.dir/src/main.cxx.o
-fusion: CMakeFiles/fusion.dir/build.make
-fusion: /opt/homebrew/lib/libfmt.11.0.2.dylib
-fusion: CMakeFiles/fusion.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/Users/elizabeth/Desktop/Cambridge/Dissertation/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Linking CXX executable fusion"
+libfusion.a: CMakeFiles/fusion.dir/src/csvHandler.cxx.o
+libfusion.a: CMakeFiles/fusion.dir/src/dataRepresentation.cxx.o
+libfusion.a: CMakeFiles/fusion.dir/src/experiment.cxx.o
+libfusion.a: CMakeFiles/fusion.dir/src/fusion.cxx.o
+libfusion.a: CMakeFiles/fusion.dir/build.make
+libfusion.a: CMakeFiles/fusion.dir/link.txt
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/Users/elizabeth/Desktop/Cambridge/Dissertation/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Linking CXX static library libfusion.a"
+	$(CMAKE_COMMAND) -P CMakeFiles/fusion.dir/cmake_clean_target.cmake
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/fusion.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
-CMakeFiles/fusion.dir/build: fusion
+CMakeFiles/fusion.dir/build: libfusion.a
 .PHONY : CMakeFiles/fusion.dir/build
 
 CMakeFiles/fusion.dir/clean:

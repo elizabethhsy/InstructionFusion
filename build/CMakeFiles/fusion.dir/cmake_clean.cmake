@@ -1,14 +1,14 @@
 file(REMOVE_RECURSE
+  "CMakeFiles/fusion.dir/src/csvHandler.cxx.o"
+  "CMakeFiles/fusion.dir/src/csvHandler.cxx.o.d"
   "CMakeFiles/fusion.dir/src/dataRepresentation.cxx.o"
   "CMakeFiles/fusion.dir/src/dataRepresentation.cxx.o.d"
   "CMakeFiles/fusion.dir/src/experiment.cxx.o"
   "CMakeFiles/fusion.dir/src/experiment.cxx.o.d"
   "CMakeFiles/fusion.dir/src/fusion.cxx.o"
   "CMakeFiles/fusion.dir/src/fusion.cxx.o.d"
-  "CMakeFiles/fusion.dir/src/main.cxx.o"
-  "CMakeFiles/fusion.dir/src/main.cxx.o.d"
-  "fusion"
-  "fusion.pdb"
+  "libfusion.a"
+  "libfusion.pdb"
 )
 
 # Per-language clean rules from dependency scanning.
