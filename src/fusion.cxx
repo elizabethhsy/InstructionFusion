@@ -7,7 +7,27 @@ namespace fusion
 
 using namespace std;
 
-FusionStats FusionCalculator::calculateFusion(
+string FusionConfig::toString() const
+{
+    return fmt::format(
+        "FusionConfig: fusable_name={}, end_name={}, max_fusable_length={}",
+        fusableName,
+        endName,
+        maxFusableLength
+    );
+}
+
+string FusionConfig::title() const
+{
+    return fmt::format(
+        "{}{} (max {})",
+        fusableName,
+        endName.empty() ? "" : " + END " + endName,
+        maxFusableLength
+    );
+}
+
+FusionResults FusionCalculator::calculateFusion(
     File const& file,
     FusionConfig const& config
 )
@@ -70,20 +90,7 @@ FusionStats FusionCalculator::calculateFusion(
         record_end_of_block();
     }
 
-    FusionStats stats{
-        .totalInstructions = file.stats->totalInstructionNum,
-        .instructionsAfterFuse = instructionsAfterFuse,
-        .fusionLengths = fusionLengths
-    };
-
-    return stats;
-}
-
-float FusionStats::getAvgFusionLength()
-{
-    // iterate through the vector of fusion lengths + count
-    // and calculate the average, weighted by the number of times
-    // each fusable block has been executed
+    // calculate average fusion length
     float avgLength = 0;
     uint totalCount = 0;
 
@@ -94,9 +101,24 @@ float FusionStats::getAvgFusionLength()
         avgLength += count*length;
         totalCount += count;
     }
-
     avgLength /= totalCount;
-    return avgLength;
+
+    auto totalInstructions = file.stats->totalInstructionNum;
+    auto fusedInstructions = totalInstructions - instructionsAfterFuse;
+    auto fusedPercentage = 100*(fusedInstructions)/float(totalInstructions);
+
+    FusionResults results{
+        .file = file,
+        .config = config,
+        .totalInstructions = totalInstructions,
+        .instructionsAfterFuse = instructionsAfterFuse,
+        .fusedInstructions = fusedInstructions,
+        .fusedPercentage = fusedPercentage,
+        .fusionLengths = fusionLengths,
+        .avgFusionLength = avgLength
+    };
+
+    return results;
 }
 
 }

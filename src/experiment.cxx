@@ -8,7 +8,10 @@ namespace fusion
 
 using namespace std;
 
-Experiment::Experiment(vector<string> filepaths)
+Experiment::Experiment(
+    vector<string> filepaths,
+    vector<FusionConfig> const& configs
+) : configs(configs)
 {
     // create the necessary file objects
     for (auto filepath : filepaths) {
@@ -61,18 +64,19 @@ uint64_t Experiment::totalInstructionNum()
     return totalInstructionNum;
 }
 
-void Experiment::run()
+vector<FusionResults> Experiment::run()
 {
     FusionCalculator calculator;
+    vector<FusionResults> results;
 
-    auto run_experiment = [&](string title, FusionConfig config) {
-        LOG_INFO(title);
+    auto run_experiment = [&](FusionConfig const& config) {
+        LOG_INFO(config.title());
         for (auto const& file : files) {
-            FusionStats result = calculator.calculateFusion(
+            FusionResults result = calculator.calculateFusion(
                 *file,
                 config
             );
-
+            
             auto const& totalBefore = result.totalInstructions;
             auto const& totalAfter = result.instructionsAfterFuse;
 
@@ -85,77 +89,19 @@ void Experiment::run()
                     totalAfter,
                     totalBefore-totalAfter,
                     100*(totalBefore-totalAfter)/float(totalBefore),
-                    result.getAvgFusionLength()
+                    result.avgFusionLength
                 )
             );
+
+            results.push_back(std::move(result));
         }
     };
 
-    vector<string> arithmetic_memory;
-    arithmetic_memory.reserve(
-        arithmeticInstructions.size() + memoryInstructions.size()
-    );
-    arithmetic_memory.insert(
-        arithmetic_memory.end(),
-        arithmeticInstructions.begin(),
-        arithmeticInstructions.end()
-    );
-    arithmetic_memory.insert(
-        arithmetic_memory.end(),
-        memoryInstructions.begin(),
-        memoryInstructions.end()
-    );
-    
-    vector<string> arithmetic_branch;
-    arithmetic_branch.reserve(
-        arithmeticInstructions.size() + branchInstructions.size()
-    );
-    arithmetic_branch.insert(
-        arithmetic_branch.end(),
-        arithmeticInstructions.begin(),
-        arithmeticInstructions.end()
-    );
-    arithmetic_branch.insert(
-        arithmetic_branch.end(),
-        branchInstructions.begin(),
-        branchInstructions.end()
-    );
+    for (auto const& config : configs) {
+        run_experiment(config);
+    }
 
-    run_experiment(
-        "ARITHMETIC + MEMORY INSTRUCTIONS",
-        FusionConfig{ .fusable = arithmetic_memory }
-    );
-
-    run_experiment(
-        "ARITHMETIC INSTRUCTIONS",
-        FusionConfig{ .fusable = arithmeticInstructions }
-    );
-
-    run_experiment(
-        "MEMORY INSTRUCTIONS",
-        FusionConfig{ .fusable = memoryInstructions }
-    );
-
-    run_experiment(
-        "ARITHMETIC + BRANCH INSTRUCTIONS",
-        FusionConfig{ .fusable = arithmetic_branch }
-    );
-
-    run_experiment(
-        "ARITHMETIC + END MEMORY",
-        FusionConfig{
-            .fusable = arithmeticInstructions,
-            .end = memoryInstructions
-        }
-    );
-
-    run_experiment(
-        "ARITHMETIC + END BRANCH",
-        FusionConfig{
-            .fusable = arithmeticInstructions,
-            .end = branchInstructions
-        }
-    );
+    return results;
 }
 
 } // namespace fusion
