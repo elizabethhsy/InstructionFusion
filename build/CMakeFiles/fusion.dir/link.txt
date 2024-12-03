@@ -1,2 +1,0 @@
-/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ar qc libfusion.a CMakeFiles/fusion.dir/src/csvHandler.cxx.o CMakeFiles/fusion.dir/src/dataRepresentation.cxx.o CMakeFiles/fusion.dir/src/experiment.cxx.o CMakeFiles/fusion.dir/src/fusion.cxx.o
-/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib libfusion.a
