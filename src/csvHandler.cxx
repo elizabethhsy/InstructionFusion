@@ -59,9 +59,9 @@ void CSVHandler::writeResultsToCSV(
     // file, fusable, end, max_fusable_length, total_instructions,
     // instructions_after_fuse, instructions_fused, percentage_fused,
     // average_fusion_length
-    overviewFile << "file, fusable, end, max_fusable_length, "
-        "total_instructions, instructions_after_fuse, instructions_fused, "
-        "percentage_fused, average_fusion_length\n";
+    overviewFile << "file,fusable,end,max_fusable_length,total_instructions,"
+        "instructions_after_fuse,instructions_fused,percentage_fused,"
+        "average_fusion_length\n";
 
     for (auto result : results) {
         overviewFile << fmt::format(
@@ -92,7 +92,7 @@ void CSVHandler::writeResultsToCSV(
         return;
     }
 
-    fusionLengthFile << "file, fusable, end, max_fusable_length, count, "
+    fusionLengthFile << "file,fusable,end,max_fusable_length,count,"
         "fusion_length\n";
     
     for (auto result : results) {

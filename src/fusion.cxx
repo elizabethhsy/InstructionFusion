@@ -39,6 +39,13 @@ FusionResults FusionCalculator::calculateFusion(
     auto const& fusable = config.fusable;
     auto const& end = config.end;
 
+    auto maxFusableLength = config.maxFusableLength;
+    if (!config.maxFusableLength) {
+        maxFusableLength = UINT64_MAX;
+    }
+
+    // LOG_INFO(config.toString());
+
     for (auto const& criticalSection : file.stats->criticalSections) {
         const auto* startInstr = criticalSection->start;
         auto startIdx = distance(&file.instructions[0], startInstr);
@@ -65,7 +72,8 @@ FusionResults FusionCalculator::calculateFusion(
             // fusable block
             // current instruction
             // ------
-            if (count(end.begin(), end.end(), instruction.instr) != 0)
+            if (count(end.begin(), end.end(), instruction.instr) != 0
+                && blockLength < maxFusableLength)
             {
                 blockLength++;
                 record_end_of_block();
@@ -78,12 +86,14 @@ FusionResults FusionCalculator::calculateFusion(
             // current instruction
             else if (
                 count(fusable.begin(), fusable.end(), instruction.instr) == 0
-                || blockLength >= config.maxFusableLength
+                || blockLength >= maxFusableLength
             ) {
                 record_end_of_block();
                 blockLength++;
             }
             else {
+                // if (blockLength)
+                //     LOG_INFO(fmt::format("incrementing block_length from {}", blockLength));
                 blockLength++;
             }
         }
@@ -91,8 +101,8 @@ FusionResults FusionCalculator::calculateFusion(
     }
 
     // calculate average fusion length
-    float avgLength = 0;
-    uint totalCount = 0;
+    double avgLength = 0;
+    uint64_t totalCount = 0;
 
     for (auto block : fusionLengths) {
         auto const& count = block.first;
@@ -101,11 +111,11 @@ FusionResults FusionCalculator::calculateFusion(
         avgLength += count*length;
         totalCount += count;
     }
-    avgLength /= totalCount;
+    avgLength = double(avgLength)/totalCount;
 
     auto totalInstructions = file.stats->totalInstructionNum;
     auto fusedInstructions = totalInstructions - instructionsAfterFuse;
-    auto fusedPercentage = 100*(fusedInstructions)/float(totalInstructions);
+    auto fusedPercentage = 100*(fusedInstructions)/double(totalInstructions);
 
     FusionResults results{
         .file = file,

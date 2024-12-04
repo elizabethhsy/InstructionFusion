@@ -169,8 +169,8 @@ void FileStats::constructCriticalSections(vector<string> delimiters)
 
         int diff = abs(static_cast<int>(instruction.count - nextInstruction.count));
         if (
-            ((find(delimiters.begin(), delimiters.end(), instruction.instr)
-            != delimiters.end())  && diff >= 1) ||
+            (find(delimiters.begin(), delimiters.end(), instruction.instr)
+            != delimiters.end()) || diff >= 1 ||
             (!Instr::isContiguous(prevInstruction, instruction) && i > 0) ||
             (i == n-1) // end of the file
             )
@@ -189,6 +189,12 @@ void FileStats::constructCriticalSections(vector<string> delimiters)
             reset();
         }
     }
+
+    uint total = 0;
+    for (auto& criticalSection : criticalSections) {
+        total += criticalSection->length*criticalSection->count;
+    }
+    // LOG_INFO(fmt::format("Critical Section: before={}, after={}", calculateTotalInstructionNum(), total));
 }
 
 float FileStats::calculateAvgCriticalSectionSize()

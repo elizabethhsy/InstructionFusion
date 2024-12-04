@@ -31,6 +31,24 @@ int main(int argc, char const *argv[])
         name = fmt::format("{}/{}.csv", dirPath, name);
     }
 
+    std::vector<std::string> combinedInstructions;
+    combinedInstructions.reserve(
+        fusion::memoryInstructions.size() +
+        fusion::branchInstructions.size()
+    );
+    
+    combinedInstructions.insert(
+        combinedInstructions.end(),
+        fusion::memoryInstructions.begin(),
+        fusion::memoryInstructions.end()
+    );
+    
+    combinedInstructions.insert(
+        combinedInstructions.end(),
+        fusion::branchInstructions.begin(),
+        fusion::branchInstructions.end()
+    );
+
     std::vector<fusion::FusionConfig> configs = {
         fusion::FusionConfig {
             .fusableName = "ARITHMETIC",
@@ -43,8 +61,46 @@ int main(int argc, char const *argv[])
             .fusable = fusion::arithmeticInstructions,
             .endName = "BRANCH",
             .end = fusion::branchInstructions
+        },
+        fusion::FusionConfig {
+            .fusableName = "ARITHMETIC",
+            .fusable = fusion::arithmeticInstructions,
+            .endName = "MEMORY & BRANCH",
+            .end = combinedInstructions
         }
     };
+
+    for (uint i = 1; i <= 6; i++) {
+        configs.push_back(
+            fusion::FusionConfig {
+                .fusableName = "ARITHMETIC",
+                .fusable = fusion::arithmeticInstructions,
+                .endName = "MEMORY",
+                .end = fusion::memoryInstructions,
+                .maxFusableLength = i
+            }
+        );
+
+        configs.push_back(
+            fusion::FusionConfig {
+                .fusableName = "ARITHMETIC",
+                .fusable = fusion::arithmeticInstructions,
+                .endName = "BRANCH",
+                .end = fusion::branchInstructions,
+                .maxFusableLength = i
+            }
+        );
+
+        configs.push_back(
+            fusion::FusionConfig {
+                .fusableName = "ARITHMETIC",
+                .fusable = fusion::arithmeticInstructions,
+                .endName = "MEMORY & BRANCH",
+                .end = combinedInstructions,
+                .maxFusableLength = i
+            }
+        );
+    }
 
     fusion::Experiment experiment(fileNames, configs);
     std::vector<fusion::FusionResults> results = experiment.run();

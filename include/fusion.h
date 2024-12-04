@@ -17,7 +17,8 @@ struct FusionConfig
     vector<string> const& fusable;
     string endName;
     vector<string> const& end = {};
-    uint64_t maxFusableLength = UINT64_MAX;
+    uint64_t maxFusableLength = 0; // meaning no maximum fusable length
+    // TODO: set maxFusableLength to be an option type
 
     string title() const;
     string toString() const;
@@ -33,8 +34,8 @@ struct FusionResults
     uint64_t instructionsAfterFuse;
     uint64_t fusedInstructions;
     vector<pair<uint, uint>> fusionLengths; // count, block length
-    float avgFusionLength;
-    float fusedPercentage;
+    double avgFusionLength;
+    double fusedPercentage;
 };
 
 struct FusionCalculator
