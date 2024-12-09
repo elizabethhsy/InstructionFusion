@@ -38,10 +38,40 @@ vector<Instr> CSVHandler::loadInstructionsFromCSV(string fullPath)
 
 void CSVHandler::writeResultsToCSV(
     vector<FusionResults> const& results,
+    vector<FusionResults> const& aggregate_results,
+    string aggregateCSV,
     string overviewCSV,
     string fusionLengthsCSV
 )
 {
+    ofstream aggregateFile(aggregateCSV);
+    if (!aggregateFile.is_open()) {
+        LOG_ERROR(
+            fmt::format(
+                "{} cannot be opened, check that the file exists.",
+                aggregateCSV
+            )
+        );
+        return;
+    }
+    aggregateFile << "fusable,end,max_fusable_length,total_instructions,"
+        "instructions_after_fuse,instructions_fused,percentage_fused,"
+        "average_fusion_length\n";
+    for (auto result : aggregate_results) {
+        aggregateFile << fmt::format(
+            "{},{},{},{},{},{},{},{}\n",
+            result.config.fusableName,
+            result.config.endName,
+            result.config.maxFusableLength,
+            result.totalInstructions,
+            result.instructionsAfterFuse,
+            result.fusedInstructions,
+            result.fusedPercentage,
+            result.avgFusionLength
+        );
+    }
+
+
     ofstream overviewFile(overviewCSV);
 
     if (!overviewFile.is_open()) {

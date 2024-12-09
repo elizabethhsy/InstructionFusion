@@ -1,3 +1,4 @@
+#include "csvHandler.h"
 #include "experiment.h"
 #include "fusion.h"
 #include "instructions.h"
@@ -64,12 +65,15 @@ uint64_t Experiment::totalInstructionNum()
     return totalInstructionNum;
 }
 
-vector<FusionResults> Experiment::run()
+void Experiment::run(string resultsPath)
 {
     FusionCalculator calculator;
     vector<FusionResults> results;
+    vector<FusionResults> aggregate_results;
+    vector<FusionResults> aggregate_temp;
 
     auto run_experiment = [&](FusionConfig const& config) {
+        aggregate_temp.clear();
         LOG_INFO(config.title());
         for (auto const& file : files) {
             FusionResults result = calculator.calculateFusion(
@@ -93,15 +97,44 @@ vector<FusionResults> Experiment::run()
                 )
             );
 
+            aggregate_temp.push_back(result);
             results.push_back(std::move(result));
         }
+
+        // collect aggregate results across all files for each config
+        FusionResults r{
+            .file = *files[0],
+            .config = config
+        };
+        // r.config = config;
+        for (auto const& res : aggregate_temp) {
+            r.totalInstructions += res.totalInstructions;
+            r.instructionsAfterFuse += res.instructionsAfterFuse;
+            r.fusedInstructions += res.fusedInstructions;
+            r.fusionLengths.insert(
+                r.fusionLengths.end(),
+                res.fusionLengths.begin(),
+                res.fusionLengths.end()
+            );
+        }
+        r.avgFusionLength =
+            FusionCalculator::calcAvgFusionLength(r.fusionLengths);
+        r.fusedPercentage =
+            100*(r.fusedInstructions)/double(r.totalInstructions);
+        aggregate_results.push_back(r);
     };
 
     for (auto const& config : configs) {
         run_experiment(config);
     }
 
-    return results;
+    CSVHandler::writeResultsToCSV(
+        results,
+        aggregate_results,
+        resultsPath + "/aggregate.csv",
+        resultsPath + "/overview.csv",
+        resultsPath + "/fusionLengths.csv"
+    );
 }
 
 } // namespace fusion

@@ -52,6 +52,10 @@ int main(int argc, char const *argv[])
     std::vector<fusion::FusionConfig> configs = {
         fusion::FusionConfig {
             .fusableName = "ARITHMETIC",
+            .fusable = fusion::arithmeticInstructions
+        },
+        fusion::FusionConfig {
+            .fusableName = "ARITHMETIC",
             .fusable = fusion::arithmeticInstructions,
             .endName = "MEMORY",
             .end = fusion::memoryInstructions
@@ -71,6 +75,14 @@ int main(int argc, char const *argv[])
     };
 
     for (uint i = 1; i <= 6; i++) {
+        configs.push_back(
+            fusion::FusionConfig {
+                .fusableName = "ARITHMETIC",
+                .fusable = fusion::arithmeticInstructions,
+                .maxFusableLength = i
+            }
+        );
+        
         configs.push_back(
             fusion::FusionConfig {
                 .fusableName = "ARITHMETIC",
@@ -103,11 +115,12 @@ int main(int argc, char const *argv[])
     }
 
     fusion::Experiment experiment(fileNames, configs);
-    std::vector<fusion::FusionResults> results = experiment.run();
-    fusion::CSVHandler::writeResultsToCSV(
-        results,
-        resultsPath + "/overview.csv",
-        resultsPath + "/fusionLengths.csv"
-    );
+    experiment.run(resultsPath);
+    // std::vector<fusion::FusionResults> results = experiment.run(resultsPath);
+    // fusion::CSVHandler::writeResultsToCSV(
+    //     results,
+    //     resultsPath + "/overview.csv",
+    //     resultsPath + "/fusionLengths.csv"
+    // );
     return 0;
 }

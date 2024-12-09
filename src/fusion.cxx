@@ -100,19 +100,6 @@ FusionResults FusionCalculator::calculateFusion(
         record_end_of_block();
     }
 
-    // calculate average fusion length
-    double avgLength = 0;
-    uint64_t totalCount = 0;
-
-    for (auto block : fusionLengths) {
-        auto const& count = block.first;
-        auto const& length = block.second;
-
-        avgLength += count*length;
-        totalCount += count;
-    }
-    avgLength = double(avgLength)/totalCount;
-
     auto totalInstructions = file.stats->totalInstructionNum;
     auto fusedInstructions = totalInstructions - instructionsAfterFuse;
     auto fusedPercentage = 100*(fusedInstructions)/double(totalInstructions);
@@ -125,10 +112,28 @@ FusionResults FusionCalculator::calculateFusion(
         .fusedInstructions = fusedInstructions,
         .fusedPercentage = fusedPercentage,
         .fusionLengths = fusionLengths,
-        .avgFusionLength = avgLength
+        .avgFusionLength = calcAvgFusionLength(fusionLengths)
     };
 
     return results;
+}
+
+float FusionCalculator::calcAvgFusionLength(
+    vector<pair<uint, uint>> const& fusionLengths
+)
+{
+    double avgLength = 0;
+    uint64_t totalCount = 0;
+
+    for (auto block : fusionLengths) {
+        auto const& count = block.first;
+        auto const& length = block.second;
+
+        avgLength += count*length;
+        totalCount += count;
+    }
+    avgLength = double(avgLength)/totalCount;
+    return avgLength;
 }
 
 }

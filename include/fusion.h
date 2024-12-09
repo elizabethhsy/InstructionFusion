@@ -5,6 +5,7 @@
 
 #include <vector>
 #include <string>
+#include <optional>
 
 namespace fusion
 {
@@ -43,6 +44,10 @@ struct FusionCalculator
     FusionResults calculateFusion(
         File const& file,
         FusionConfig const& config
+    );
+
+    static float calcAvgFusionLength(
+        vector<pair<uint, uint>> const& fusionLengths
     );
 };
 

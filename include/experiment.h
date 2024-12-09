@@ -20,7 +20,7 @@ public:
 
     float avgCriticalSectionSize();
     uint64_t totalInstructionNum();
-    vector<FusionResults> run();
+    void run(string resultsPath); // writes results to CSV
 private:
     vector<FusionConfig> const& configs;
     vector<unique_ptr<File>> files;

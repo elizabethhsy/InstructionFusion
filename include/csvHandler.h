@@ -15,6 +15,8 @@ struct CSVHandler
     static vector<Instr> loadInstructionsFromCSV(string fullPath);
     static void writeResultsToCSV(
         vector<FusionResults> const& results,
+        vector<FusionResults> const& aggregate_results,
+        string aggregateCSV,
         string overviewCSV,
         string fusionLengthsCSV
     );
