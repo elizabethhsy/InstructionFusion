@@ -116,11 +116,5 @@ int main(int argc, char const *argv[])
 
     fusion::Experiment experiment(fileNames, configs);
     experiment.run(resultsPath);
-    // std::vector<fusion::FusionResults> results = experiment.run(resultsPath);
-    // fusion::CSVHandler::writeResultsToCSV(
-    //     results,
-    //     resultsPath + "/overview.csv",
-    //     resultsPath + "/fusionLengths.csv"
-    // );
     return 0;
 }

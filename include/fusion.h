@@ -37,6 +37,8 @@ struct FusionResults
     vector<pair<uint, uint>> fusionLengths; // count, block length
     double avgFusionLength;
     double fusedPercentage;
+    
+    string toString() const;
 };
 
 struct FusionCalculator

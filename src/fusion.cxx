@@ -27,6 +27,22 @@ string FusionConfig::title() const
     );
 }
 
+string FusionResults::toString() const
+{
+    return fmt::format(
+        "FusionResults: file={}, config=({}), total_instructions={}, "
+        "instructions_after_fuse={}, fused_instructions={}, avg_fusion_length="
+        "{}, fused_percentage={}",
+        file.fileName,
+        config.toString(),
+        totalInstructions,
+        instructionsAfterFuse,
+        fusedInstructions,
+        avgFusionLength,
+        fusedPercentage
+    );
+}
+
 FusionResults FusionCalculator::calculateFusion(
     File const& file,
     FusionConfig const& config
@@ -43,8 +59,6 @@ FusionResults FusionCalculator::calculateFusion(
     if (!config.maxFusableLength) {
         maxFusableLength = UINT64_MAX;
     }
-
-    // LOG_INFO(config.toString());
 
     for (auto const& criticalSection : file.stats->criticalSections) {
         const auto* startInstr = criticalSection->start;
@@ -63,8 +77,14 @@ FusionResults FusionCalculator::calculateFusion(
             blockLength = 0;
         };
 
+        LOG_DEBUG(
+            fmt::format("critical_section_length={}", criticalSection->length)
+        );
+
         for (int i = 0; i < criticalSection->length; i++) {
             auto const& instruction = file.instructions[startIdx+i];
+
+            LOG_DEBUG(fmt::format("block_length={}", blockLength));
 
             // if the instruction is in the end block, record the end of the
             // fusable block to be after this instruction:
@@ -84,16 +104,16 @@ FusionResults FusionCalculator::calculateFusion(
             // fusable block
             // ------
             // current instruction
+            // ------
             else if (
                 count(fusable.begin(), fusable.end(), instruction.instr) == 0
                 || blockLength >= maxFusableLength
             ) {
                 record_end_of_block();
                 blockLength++;
+                record_end_of_block();
             }
             else {
-                // if (blockLength)
-                //     LOG_INFO(fmt::format("incrementing block_length from {}", blockLength));
                 blockLength++;
             }
         }

@@ -72,19 +72,7 @@ FileStats::FileStats(File const* file)
     : file(file)
 {
     initialised = false;
-    vector<string> delimiters;
-    delimiters.reserve(branchInstructions.size() + memoryInstructions.size());
-    delimiters.insert(
-        delimiters.end(),
-        branchInstructions.begin(),
-        branchInstructions.end()
-    );
-    delimiters.insert(
-        delimiters.end(),
-        memoryInstructions.begin(),
-        memoryInstructions.end()
-    );
-    constructCriticalSections(delimiters);
+    constructCriticalSections(branchInstructions);
 }
 
 string FileStats::toString()

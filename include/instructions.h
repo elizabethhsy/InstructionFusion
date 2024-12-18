@@ -61,7 +61,8 @@ const vector<string> arithmeticInstructions = {
     "and", "andi",  // Bitwise AND
     "or", "ori",  // Bitwise OR
     "neg", "negw",  // Negation
-    "slt", "slti", "sltu", "sltiu"  // Set less than (with unsigned variants)
+    "slt", "slti", "sltu", "sltiu",  // Set less than (with unsigned variants)
+    "cincoffset", "c.mv", "cmove", "auipc", "auipcc", "c.li"
 };
 
 }

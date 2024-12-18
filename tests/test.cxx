@@ -4,6 +4,7 @@
 #include <macros.h>
 
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include <string>
 
 namespace fusion
@@ -23,18 +24,59 @@ TEST_CASE("test fusion", "[fusion]") {
     };
 
     REQUIRE(file.instructions[0] == first);
+    REQUIRE(file.stats->criticalSections[0]->length == 8);
 
     // once we parsed the file correctly, try to fuse it
     FusionCalculator calculator;
-    auto results = calculator.calculateFusion(
-        file,
-        FusionConfig{ .fusable = { "csc" }, .maxFusableLength=UINT64_MAX }
-    ); // only the first 5 instructions should be fused
+    SECTION("basic fusion", "[fusion]") {
+        auto results = calculator.calculateFusion(
+            file,
+            FusionConfig{
+                .fusableName = "csc",
+                .fusable = { "csc" },
+                .maxFusableLength = UINT64_MAX
+            }
+        ); // only the first 5 instructions should be fused
 
-    REQUIRE(results.totalInstructions >= results.instructionsAfterFuse);
-    auto instructionsSaved = results.totalInstructions -
-        results.instructionsAfterFuse;
-    REQUIRE(instructionsSaved == 400);
+        REQUIRE(results.totalInstructions >= results.instructionsAfterFuse);
+        REQUIRE(results.fusedInstructions ==
+            results.totalInstructions - results.instructionsAfterFuse);
+        REQUIRE(results.fusedInstructions == 400);
+        // floating point comparison
+        REQUIRE_THAT(
+            results.fusedPercentage,
+            Catch::Matchers::WithinRel(400.0/2810*100)
+        );
+    }
+
+    SECTION("limit maximum fusable length", "[fusion]") {
+        auto results = calculator.calculateFusion(
+            file,
+            FusionConfig {
+                .fusableName = "csc",
+                .fusable = { "csc" },
+                .maxFusableLength = 2
+            }
+        );
+
+        // two pairs of csc fused with each other
+        REQUIRE(results.fusedInstructions == 200);
+    }
+
+    SECTION("fuse with end instructions", "[fusion]") {
+        auto results = calculator.calculateFusion(
+            file,
+            FusionConfig {
+                .fusableName = "csc",
+                .fusable = { "csc" },
+                .endName = "cincoffset",
+                .end = { "cincoffset" },
+                .maxFusableLength = UINT64_MAX
+            }
+        ); // fuse the first 6 instructions
+
+        REQUIRE(results.fusedInstructions == 500);
+    }
 }
 
 }
