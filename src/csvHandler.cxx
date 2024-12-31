@@ -1,7 +1,9 @@
 #include "csvHandler.h"
 #include "dataRepresentation.h"
 
+#include <boost/filesystem.hpp>
 #include <fstream>
+#include <iostream>
 #include <string>
 #include <vector>
 
@@ -39,11 +41,21 @@ vector<Instr> CSVHandler::loadInstructionsFromCSV(string fullPath)
 void CSVHandler::writeResultsToCSV(
     vector<FusionResults> const& results,
     vector<FusionResults> const& aggregate_results,
-    string aggregateCSV,
-    string overviewCSV,
-    string fusionLengthsCSV
+    string resultsPath
 )
 {
+    string aggregateCSV = resultsPath + "/aggregate.csv";
+    string overviewCSV = resultsPath + "/overview.csv";
+    string fusionLengthsCSV = resultsPath + "/fusionLengths.csv";
+
+    boost::filesystem::path dir(resultsPath);
+    if(!(boost::filesystem::exists(dir))){
+        if (!boost::filesystem::create_directory(dir)) {
+            LOG_ERROR("failed to create directory {}");
+            return;
+        }
+    }
+
     ofstream aggregateFile(aggregateCSV);
     if (!aggregateFile.is_open()) {
         LOG_ERROR(

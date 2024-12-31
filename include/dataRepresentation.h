@@ -6,21 +6,28 @@
 #include <fmt/core.h>
 #include <stdint.h>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 namespace fusion
 {
 
 using namespace std;
+using Operand = string;
 
 struct Instr
 {
     uint32_t addr;
     uint64_t count;
     string instr;
-    vector<string> operands;
+    vector<Operand> operands;
 
     string toString() const;
+
+    static unordered_set<Operand> dependentOperands(
+        Instr const& first,
+        Instr const& second
+    );
 
     static Instr parseInstruction(string const& str);
     static bool isContiguous(Instr const& prevInstr, Instr const& nextInstr)

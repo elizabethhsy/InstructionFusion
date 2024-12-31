@@ -8,7 +8,7 @@ file(GLOB SOURCES "src/*.cxx")
 add_library(${PROJECT_NAME} ${SOURCES})
 
 find_package(fmt REQUIRED)
-find_package(Boost REQUIRED)
+find_package(Boost REQUIRED COMPONENTS filesystem)
 target_link_libraries(${PROJECT_NAME} PRIVATE
     fmt::fmt ${Boost_LIBRARIES}
 )

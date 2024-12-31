@@ -83,6 +83,7 @@ FusionResults FusionCalculator::calculateFusion(
 
         for (int i = 0; i < criticalSection->length; i++) {
             auto const& instruction = file.instructions[startIdx+i];
+            auto const& prevInstruction = file.instructions[startIdx + max(i-1, 0)];
 
             LOG_DEBUG(fmt::format("block_length={}", blockLength));
 
@@ -95,6 +96,7 @@ FusionResults FusionCalculator::calculateFusion(
             if (count(end.begin(), end.end(), instruction.instr) != 0
                 && blockLength < maxFusableLength)
             {
+                LOG_DEBUG(fmt::format("fusing {}", instruction.toString()));
                 blockLength++;
                 record_end_of_block();
             }
@@ -108,12 +110,16 @@ FusionResults FusionCalculator::calculateFusion(
             else if (
                 count(fusable.begin(), fusable.end(), instruction.instr) == 0
                 || blockLength >= maxFusableLength
+                || (config.independentInstructionsOnly &&
+                    !Instr::dependentOperands(instruction, prevInstruction)
+                        .empty() && i != 0)
             ) {
                 record_end_of_block();
                 blockLength++;
                 record_end_of_block();
             }
             else {
+                LOG_DEBUG(fmt::format("fusing {}", instruction.toString()));
                 blockLength++;
             }
         }

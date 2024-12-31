@@ -131,9 +131,7 @@ void Experiment::run(string resultsPath)
     CSVHandler::writeResultsToCSV(
         results,
         aggregate_results,
-        resultsPath + "/aggregate.csv",
-        resultsPath + "/overview.csv",
-        resultsPath + "/fusionLengths.csv"
+        resultsPath
     );
 }
 

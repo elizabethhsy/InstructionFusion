@@ -20,6 +20,7 @@ struct FusionConfig
     vector<string> const& end = {};
     uint64_t maxFusableLength = 0; // meaning no maximum fusable length
     // TODO: set maxFusableLength to be an option type
+    bool independentInstructionsOnly = false;
 
     string title() const;
     string toString() const;

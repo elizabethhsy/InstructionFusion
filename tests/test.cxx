@@ -20,7 +20,7 @@ TEST_CASE("test fusion", "[fusion]") {
         .addr = 0xfc830,
         .count = 100,
         .instr = "csc",
-        .operands = {"cs6", "64(csp)"}
+        .operands = {Operand{"cs6"}, Operand{"64(csp)"}}
     };
 
     REQUIRE(file.instructions[0] == first);
@@ -33,8 +33,7 @@ TEST_CASE("test fusion", "[fusion]") {
             file,
             FusionConfig{
                 .fusableName = "csc",
-                .fusable = { "csc" },
-                .maxFusableLength = UINT64_MAX
+                .fusable = { "csc" }
             }
         ); // only the first 5 instructions should be fused
 
@@ -70,12 +69,33 @@ TEST_CASE("test fusion", "[fusion]") {
                 .fusableName = "csc",
                 .fusable = { "csc" },
                 .endName = "cincoffset",
-                .end = { "cincoffset" },
-                .maxFusableLength = UINT64_MAX
+                .end = { "cincoffset" }
             }
         ); // fuse the first 6 instructions
 
         REQUIRE(results.fusedInstructions == 500);
+    }
+
+    SECTION("fuse with independent instructions only", "[fusion]") {
+        auto results1 = calculator.calculateFusion(
+            file,
+            FusionConfig {
+                .fusableName = "snez, and",
+                .fusable = { "snez", "and" },
+                .independentInstructionsOnly = true
+            }
+        );
+
+        auto results2 = calculator.calculateFusion(
+            file,
+            FusionConfig {
+                .fusableName = "snez, and",
+                .fusable = { "snez", "and" }
+            }
+        );
+
+        REQUIRE(results1.fusedInstructions == 64);
+        REQUIRE(results2.fusedInstructions == 128);
     }
 }
 

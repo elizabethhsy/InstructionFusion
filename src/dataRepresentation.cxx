@@ -3,20 +3,43 @@
 #include "instructions.h"
 #include "macros.h"
 
+#include <algorithm>
 #include <boost/algorithm/string.hpp>
 #include <cassert>
 #include <filesystem>
 #include <fmt/core.h>
 #include <fstream>
 #include <iterator>
+#include <ranges>
 #include <regex>
 #include <sstream>
+#include <unordered_set>
 #include <vector>
 
 namespace fusion
 {
 
 using namespace std;
+
+unordered_set<Operand> Instr::dependentOperands(
+    Instr const& first,
+    Instr const& second
+)
+{
+    unordered_set<Operand> result;
+    unordered_set<Operand> const op1(
+        first.operands.begin(),
+        first.operands.end()
+    );
+
+    for (auto const& op2 : second.operands) {
+        if (op1.contains(op2)) {
+            // the two instructions share the same operand
+            result.insert(op2);
+        }
+    }
+    return result;
+}
 
 Instr Instr::parseInstruction(string const& str)
 {
@@ -43,7 +66,7 @@ Instr Instr::parseInstruction(string const& str)
 
     stringstream operands(tokens[3]);
     while (getline(operands, cell, ' ')) {
-        instr.operands.push_back(cell);
+        instr.operands.push_back(Operand{cell});
     }
 
     return instr;
@@ -52,7 +75,7 @@ Instr Instr::parseInstruction(string const& str)
 string Instr::toString() const
 {
     return fmt::format(
-        "Instr: addr={:#04x}, count={}, instr={}, operands={}",
+        "Instr: addr={:#04x}, count={}, instr={}, operands=[{}]",
         addr,
         count,
         instr,

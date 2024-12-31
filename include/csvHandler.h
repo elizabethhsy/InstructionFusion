@@ -16,9 +16,7 @@ struct CSVHandler
     static void writeResultsToCSV(
         vector<FusionResults> const& results,
         vector<FusionResults> const& aggregate_results,
-        string aggregateCSV,
-        string overviewCSV,
-        string fusionLengthsCSV
+        string resultsPath
     );
 };
 

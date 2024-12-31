@@ -81,6 +81,9 @@
         "charconv": "cpp",
         "execution": "cpp",
         "print": "cpp",
-        "queue": "cpp"
+        "queue": "cpp",
+        "__tree": "cpp",
+        "set": "cpp",
+        "span": "cpp"
     }
 }

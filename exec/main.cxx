@@ -3,6 +3,7 @@
 #include <fusion.h>
 #include <instructions.h>
 
+#include <chrono>
 #include <fmt/core.h>
 #include <string>
 #include <vector>
@@ -22,10 +23,14 @@ int main(int argc, char const *argv[])
         "xalancbmk"
     };
 
+    const auto now = std::chrono::system_clock::now();
     std::string dirPath =
-        "/Users/elizabeth/Desktop/Cambridge/Dissertation/cleaned data";
+            "/Users/elizabeth/Desktop/Cambridge/Dissertation/cleaned data";
     std::string resultsPath =
-        "/Users/elizabeth/Desktop/Cambridge/Dissertation/data results";
+        fmt::format(
+            "/Users/elizabeth/Desktop/Cambridge/Dissertation/data results/{}",
+            std::format("{:%d-%m-%Y_%H:%M:%OS}", now)
+        );
         
     for (auto& name : fileNames) {
         name = fmt::format("{}/{}.csv", dirPath, name);
@@ -116,5 +121,6 @@ int main(int argc, char const *argv[])
 
     fusion::Experiment experiment(fileNames, configs);
     experiment.run(resultsPath);
+    // separate out run and save
     return 0;
 }
