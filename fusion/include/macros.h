@@ -1,5 +1,7 @@
 #pragma once
 
+#include <fusion_export.h>
+
 #include <iostream>
 
 #define DEBUG false

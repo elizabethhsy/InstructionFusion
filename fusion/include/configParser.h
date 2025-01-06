@@ -1,0 +1,10 @@
+
+namespace fusion
+{
+
+struct ConfigParser
+{
+    
+};
+
+}

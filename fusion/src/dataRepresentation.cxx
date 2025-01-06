@@ -21,24 +21,17 @@ namespace fusion
 
 using namespace std;
 
-unordered_set<Operand> Instr::dependentOperands(
-    Instr const& first,
-    Instr const& second
+bool Instr::dependentOperands(
+    Instr const& instruction,
+    unordered_set<Operand> const& dependentOperands
 )
 {
-    unordered_set<Operand> result;
-    unordered_set<Operand> const op1(
-        first.operands.begin(),
-        first.operands.end()
-    );
-
-    for (auto const& op2 : second.operands) {
-        if (op1.contains(op2)) {
-            // the two instructions share the same operand
-            result.insert(op2);
+    for (auto const& op : instruction.operands) {
+        if (dependentOperands.contains(op)) {
+            return true;
         }
     }
-    return result;
+    return false;
 }
 
 Instr Instr::parseInstruction(string const& str)

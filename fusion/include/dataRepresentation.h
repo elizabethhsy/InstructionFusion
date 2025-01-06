@@ -1,5 +1,7 @@
 #pragma once
 
+#include <fusion_export.h>
+
 #include "macros.h"
 
 #include <boost/algorithm/string/join.hpp>
@@ -15,7 +17,7 @@ namespace fusion
 using namespace std;
 using Operand = string;
 
-struct Instr
+struct FUSION_NO_EXPORT Instr
 {
     uint32_t addr;
     uint64_t count;
@@ -24,9 +26,9 @@ struct Instr
 
     string toString() const;
 
-    static unordered_set<Operand> dependentOperands(
-        Instr const& first,
-        Instr const& second
+    static bool dependentOperands(
+        Instr const& instruction,
+        unordered_set<Operand> const& dependentOperands
     );
 
     static Instr parseInstruction(string const& str);
@@ -51,7 +53,7 @@ struct Instr
 };
 ostream& operator<<(ostream& os, Instr const& instr);
 
-struct CriticalSection
+struct FUSION_NO_EXPORT CriticalSection
 {
     uint length;
     uint count;
@@ -61,7 +63,7 @@ struct CriticalSection
 };
 
 struct File;
-struct FileStats
+struct FUSION_NO_EXPORT FileStats
 {
 public:
     File const* file; // read only
@@ -81,7 +83,7 @@ private:
     uint64_t calculateTotalInstructionNum();
 };
 
-struct File
+struct FUSION_NO_EXPORT File
 {
 public:
     string fileName;

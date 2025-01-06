@@ -51,6 +51,7 @@ FusionResults FusionCalculator::calculateFusion(
     uint64_t instructionsAfterFuse = 0;
     float numBlocks = 0;
     vector<pair<uint, uint>> fusionLengths;
+    unordered_set<Operand> dependentOperands;
 
     auto const& fusable = config.fusable;
     auto const& end = config.end;
@@ -75,6 +76,7 @@ FusionResults FusionCalculator::calculateFusion(
                 make_pair(criticalSection->count, blockLength)
             );
             blockLength = 0;
+            dependentOperands.clear();
         };
 
         LOG_DEBUG(
@@ -94,7 +96,9 @@ FusionResults FusionCalculator::calculateFusion(
             // current instruction
             // ------
             if (count(end.begin(), end.end(), instruction.instr) != 0
-                && blockLength < maxFusableLength)
+                && blockLength < maxFusableLength
+                && (!config.independentInstructionsOnly ||
+                    !Instr::dependentOperands(instruction, dependentOperands)))
             {
                 LOG_DEBUG(fmt::format("fusing {}", instruction.toString()));
                 blockLength++;
@@ -111,8 +115,7 @@ FusionResults FusionCalculator::calculateFusion(
                 count(fusable.begin(), fusable.end(), instruction.instr) == 0
                 || blockLength >= maxFusableLength
                 || (config.independentInstructionsOnly &&
-                    !Instr::dependentOperands(instruction, prevInstruction)
-                        .empty() && i != 0)
+                    Instr::dependentOperands(instruction, dependentOperands))
             ) {
                 record_end_of_block();
                 blockLength++;
@@ -120,6 +123,10 @@ FusionResults FusionCalculator::calculateFusion(
             }
             else {
                 LOG_DEBUG(fmt::format("fusing {}", instruction.toString()));
+                dependentOperands.insert(
+                    instruction.operands.begin(),
+                    instruction.operands.end()
+                );
                 blockLength++;
             }
         }

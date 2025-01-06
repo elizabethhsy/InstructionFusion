@@ -1,5 +1,7 @@
 #pragma once
 
+#include <fusion_export.h>
+
 #include "dataRepresentation.h"
 #include "fusion.h"
 
@@ -11,7 +13,7 @@ namespace fusion
 
 using namespace std;
 
-struct Experiment
+struct FUSION_EXPORT Experiment
 {
 public:
     // constructor - takes in list of file names and parses the corresponding

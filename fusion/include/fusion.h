@@ -1,5 +1,7 @@
 #pragma once
 
+#include <fusion_export.h>
+
 #include "dataRepresentation.h"
 #include "macros.h"
 
@@ -12,7 +14,7 @@ namespace fusion
 
 using namespace std;
 
-struct FusionConfig
+struct FUSION_EXPORT FusionConfig
 {
     string fusableName;
     vector<string> const& fusable;
@@ -27,7 +29,7 @@ struct FusionConfig
 };
 
 // to be returned to ExperimentResults for the client to parse
-struct FusionResults
+struct FUSION_EXPORT FusionResults
 {
     File const& file;
     FusionConfig const& config;
@@ -42,7 +44,7 @@ struct FusionResults
     string toString() const;
 };
 
-struct FusionCalculator
+struct FUSION_NO_EXPORT FusionCalculator
 {
     FusionResults calculateFusion(
         File const& file,

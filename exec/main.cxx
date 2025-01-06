@@ -29,7 +29,7 @@ int main(int argc, char const *argv[])
     std::string resultsPath =
         fmt::format(
             "/Users/elizabeth/Desktop/Cambridge/Dissertation/data results/{}",
-            std::format("{:%d-%m-%Y_%H:%M:%OS}", now)
+            std::format("{:%Y_%m_%d_%H:%M:%OS}", now)
         );
         
     for (auto& name : fileNames) {

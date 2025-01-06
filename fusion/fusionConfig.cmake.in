@@ -1,0 +1,5 @@
+@PACKAGE_INIT@
+include(CMakeFindDependencyMacro)
+include ("${CMAKE_CURRENT_LIST_DIR}/fusionTargets.cmake")
+find_dependency(Boost REQUIRED COMPONENTS filesystem)
+find_dependency(fmt REQUIRED)

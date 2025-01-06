@@ -85,5 +85,11 @@
         "__tree": "cpp",
         "set": "cpp",
         "span": "cpp"
-    }
+    },
+    "cmake.compiler": {
+        "C": "/usr/bin/clang",
+        "CXX": "/usr/bin/clang++"
+    },
+    "cmake.generator": "Unix Makefiles",
+    "cmake.sourceDirectory": "/Users/elizabeth/Desktop/Cambridge/Dissertation/exec"
 }

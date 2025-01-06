@@ -1,5 +1,7 @@
 #pragma once
 
+#include <fusion_export.h>
+
 #include "dataRepresentation.h"
 #include "fusion.h"
 
@@ -10,7 +12,7 @@ namespace fusion
 
 using namespace std;
 
-struct CSVHandler
+struct FUSION_EXPORT CSVHandler
 {
     static vector<Instr> loadInstructionsFromCSV(string fullPath);
     static void writeResultsToCSV(

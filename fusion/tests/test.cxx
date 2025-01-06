@@ -14,7 +14,7 @@ using namespace std;
 
 TEST_CASE("test fusion", "[fusion]") {
     string path = "/Users/elizabeth/Desktop/Cambridge/Dissertation/"
-        "tests/test_data.csv";
+        "fusion/tests/test_data.csv";
     File file(path);
     Instr first = {
         .addr = 0xfc830,
