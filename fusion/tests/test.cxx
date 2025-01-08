@@ -41,7 +41,10 @@ TEST_CASE("test fusion", "[fusion]") {
 
         unordered_set<FusionRulePtr> functions;
         functions.insert(make_shared<FusionRule>(function));
-        ExperimentRun run{"csc", functions};
+        ExperimentRun run{
+            .title = "csc",
+            .rules = functions
+        };
 
         auto results = calculator.calculateFusion(
             file,
@@ -77,7 +80,10 @@ TEST_CASE("test fusion", "[fusion]") {
 
         unordered_set<FusionRulePtr> functions;
         functions.insert(make_shared<FusionRule>(functionMaxLength));
-        ExperimentRun run{"csc max length 2", functions};
+        ExperimentRun run{
+            .title = "csc max length 2",
+            .rules = functions
+        };
 
         auto results = calculator.calculateFusion(
             file,
@@ -100,7 +106,10 @@ TEST_CASE("test fusion", "[fusion]") {
 
         unordered_set<FusionRulePtr> functions;
         functions.insert(make_shared<FusionRule>(function));
-        ExperimentRun run{"csc + end cincoffset", functions};
+        ExperimentRun run{
+            .title = "csc + end cincoffset",
+            .rules = functions
+        };
 
         auto results = calculator.calculateFusion(
             file,
@@ -148,8 +157,14 @@ TEST_CASE("test fusion", "[fusion]") {
         unordered_set<FusionRulePtr> functions2;
         functions1.insert(make_shared<FusionRule>(fusable));
         functions2.insert(make_shared<FusionRule>(independent));
-        ExperimentRun run1{"snez/and", functions1};
-        ExperimentRun run2{"snez/and, independent", functions2};
+        ExperimentRun run1{
+            .title = "snez/and",
+            .rules = functions1
+        };
+        ExperimentRun run2{
+            .title = "snez/and, independent",
+            .rules = functions2
+        };
 
         auto results1 = calculator.calculateFusion(
             file,

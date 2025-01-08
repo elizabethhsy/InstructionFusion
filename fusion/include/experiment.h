@@ -13,26 +13,26 @@ namespace fusion
 
 using namespace std;
 
+struct FUSION_EXPORT ExperimentRun
+{
+    string title;
+    string description;
+    unordered_set<FusionRulePtr> rules;
+};
+
+struct FUSION_EXPORT ExperimentRunResults
+{
+    ExperimentRun const run;
+    vector<FusionResults> fusionResults;
+    FusionResults aggregateResults;
+};
+
 // store the results of running a single experiment, with multiple fusion
 // configs. A separate run is done for each fusion config, and the results
 // are appended to the vectors.
 struct FUSION_EXPORT ExperimentResults
 {
-    vector<FusionResults> results;
-    vector<FusionResults> aggregateResults;
-};
-
-// struct FUSION_EXPORT ExperimentRunResults
-// {
-//     vector<FusionResults> results;
-//     vector<FusionResults> aggregateResults;
-// };
-
-struct FUSION_EXPORT ExperimentRun
-{
-    string title;
-    unordered_set<FusionRulePtr> rules;
-    string description = "";
+    vector<ExperimentRunResults> runResults;
 };
 
 struct FUSION_EXPORT Experiment

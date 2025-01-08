@@ -68,12 +68,16 @@ uint64_t Experiment::totalInstructionNum()
 ExperimentResults Experiment::run()
 {
     FusionCalculator calculator;
-    vector<FusionResults> results;
-    vector<FusionResults> aggregateResults;
-    vector<FusionResults> aggregateTemp;
+    vector<ExperimentRunResults> runResults;
     
     auto run_experiment = [&](ExperimentRun const& run) {
-        aggregateTemp.clear();
+        vector<FusionResults> results;
+        // collect aggregate results across all files for each run
+        FusionResults aggregateResults{
+            .file = *files[0],
+            .run = run
+        };
+
         LOG_INFO(run.title);
         for (auto const& file : files) {
             FusionResults result = calculator.calculateFusion(
@@ -97,31 +101,33 @@ ExperimentResults Experiment::run()
                 )
             );
 
-            aggregateTemp.push_back(result);
             results.push_back(std::move(result));
         }
 
-        // collect aggregate results across all files for each run
-        FusionResults r{
-            .file = *files[0],
-            .run = run
-        };
-
-        for (auto const& res : aggregateTemp) {
-            r.totalInstructions += res.totalInstructions;
-            r.instructionsAfterFuse += res.instructionsAfterFuse;
-            r.fusedInstructions += res.fusedInstructions;
-            r.fusionLengths.insert(
-                r.fusionLengths.end(),
+        for (auto const& res : results) {
+            aggregateResults.totalInstructions += res.totalInstructions;
+            aggregateResults.instructionsAfterFuse += res.instructionsAfterFuse;
+            aggregateResults.fusedInstructions += res.fusedInstructions;
+            aggregateResults.fusionLengths.insert(
+                aggregateResults.fusionLengths.end(),
                 res.fusionLengths.begin(),
                 res.fusionLengths.end()
             );
         }
-        r.avgFusionLength =
-            FusionCalculator::calcAvgFusionLength(r.fusionLengths);
-        r.fusedPercentage =
-            100*(r.fusedInstructions)/double(r.totalInstructions);
-        aggregateResults.push_back(r);
+        aggregateResults.avgFusionLength =
+            FusionCalculator::calcAvgFusionLength(
+                aggregateResults.fusionLengths
+            );
+        aggregateResults.fusedPercentage =
+            100*(aggregateResults.fusedInstructions)/
+            double(aggregateResults.totalInstructions);
+        
+        // add run results to the overall experiment results vector
+        runResults.push_back(ExperimentRunResults{
+            .run = run,
+            .fusionResults = results,
+            .aggregateResults = aggregateResults
+        });
     };
 
     for (auto const& run : runs) {
@@ -129,16 +135,14 @@ ExperimentResults Experiment::run()
     }
 
     return ExperimentResults{
-        .results = results,
-        .aggregateResults = aggregateResults
+        .runResults = std::move(runResults)
     };
 }
 
 void Experiment::save(ExperimentResults const& results, string resultsPath)
 {
     CSVHandler::writeResultsToCSV(
-        results.results,
-        results.aggregateResults,
+        results,
         resultsPath
     );
 }

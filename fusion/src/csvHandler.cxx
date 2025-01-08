@@ -1,5 +1,6 @@
 #include "csvHandler.h"
 #include "dataRepresentation.h"
+#include "experiment.h"
 
 #include <boost/filesystem.hpp>
 #include <fstream>
@@ -39,8 +40,7 @@ vector<Instr> CSVHandler::loadInstructionsFromCSV(string fullPath)
 }
 
 void CSVHandler::writeResultsToCSV(
-    vector<FusionResults> const& results,
-    vector<FusionResults> const& aggregate_results,
+    ExperimentResults const& results,
     string resultsPath
 )
 {
@@ -66,26 +66,11 @@ void CSVHandler::writeResultsToCSV(
         );
         return;
     }
-    aggregateFile << // "fusable,end,max_fusable_length,"
-        "total_instructions,instructions_after_fuse,instructions_fused,"
-        "percentage_fused,average_fusion_length\n";
-    for (auto result : aggregate_results) {
-        aggregateFile << fmt::format(
-            "{},{},{},{},{}\n",
-            // result.config.fusableName,
-            // result.config.endName,
-            // result.config.maxFusableLength,
-            result.totalInstructions,
-            result.instructionsAfterFuse,
-            result.fusedInstructions,
-            result.fusedPercentage,
-            result.avgFusionLength
-        );
-    }
-
-
+    aggregateFile << "rule_title,rule_description,total_instructions,"
+        "instructions_after_fuse,instructions_fused,percentage_fused,"
+        "average_fusion_length\n";
+    
     ofstream overviewFile(overviewCSV);
-
     if (!overviewFile.is_open()) {
         LOG_ERROR(
             fmt::format(
@@ -95,37 +80,38 @@ void CSVHandler::writeResultsToCSV(
         );
         return;
     }
-
-
-    // write header line with columns:
-    // file, fusable, end, max_fusable_length, total_instructions,
-    // instructions_after_fuse, instructions_fused, percentage_fused,
-    // average_fusion_length
-    overviewFile << "file,"
-        // "fusable,end,max_fusable_length,"
-        "total_instructions,"
+    overviewFile << "rule_title,rule_description,file,total_instructions,"
         "instructions_after_fuse,instructions_fused,percentage_fused,"
         "average_fusion_length\n";
 
-    for (auto result : results) {
-        overviewFile << fmt::format(
-            "{},{},{},{},{},{}\n",
-            result.file.fileName,
-            // result.config.fusableName,
-            // result.config.endName,
-            // result.config.maxFusableLength,
-            result.totalInstructions,
-            result.instructionsAfterFuse,
-            result.fusedInstructions,
-            result.fusedPercentage,
-            result.avgFusionLength
+    for (auto const& run : results.runResults) {
+        for (auto const& res : run.fusionResults) {
+            overviewFile << fmt::format(
+                "{},{},{},{},{},{},{},{}\n",
+                res.run.title,
+                res.run.description,
+                res.file.fileName,
+                res.totalInstructions,
+                res.instructionsAfterFuse,
+                res.fusedInstructions,
+                res.fusedPercentage,
+                res.avgFusionLength
+            );
+        }
+
+        aggregateFile << fmt::format(
+            "{},{},{},{},{},{},{}\n",
+            run.aggregateResults.run.title,
+            run.aggregateResults.run.description,
+            run.aggregateResults.totalInstructions,
+            run.aggregateResults.instructionsAfterFuse,
+            run.aggregateResults.fusedInstructions,
+            run.aggregateResults.fusedPercentage,
+            run.aggregateResults.avgFusionLength
         );
     }
 
-    // write header line with columns:
-    // file, fusable, end, max_fusable_length, count, fusion_length
     ofstream fusionLengthFile(fusionLengthsCSV);
-
     if (!fusionLengthFile.is_open()) {
         LOG_ERROR(
             fmt::format(
@@ -135,26 +121,21 @@ void CSVHandler::writeResultsToCSV(
         );
         return;
     }
-
-    fusionLengthFile << "file,"
-    // "fusable,end,max_fusable_length,"
-    "count,"
+    fusionLengthFile << "rule_title,file,rule_description,count,"
         "fusion_length\n";
-    
-    for (auto result : results) {
-        for (auto pair : result.fusionLengths) { // pair of count, length
-            auto count = pair.first;
-            auto length = pair.second;
 
-            fusionLengthFile << fmt::format(
-                "{},{},{}\n",
-                result.file.fileName,
-                // result.config.fusableName,
-                // result.config.endName,
-                // result.config.maxFusableLength,
-                count,
-                length
-            );
+    for (auto const& run : results.runResults) {
+        for (auto const& res : run.fusionResults) {
+            for (auto const& pair : res.fusionLengths) { // pair of count, length
+                fusionLengthFile << fmt::format(
+                    "{},{},{},{},{}\n",
+                    res.run.title,
+                    res.run.description,
+                    res.file.fileName,
+                    pair.first, // count
+                    pair.second // length
+                );
+            }
         }
     }
 }

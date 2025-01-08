@@ -3,6 +3,7 @@
 #include <fusion_export.h>
 
 #include "dataRepresentation.h"
+#include "experiment.h"
 #include "fusion.h"
 
 #include <vector>
@@ -16,8 +17,7 @@ struct FUSION_EXPORT CSVHandler
 {
     static vector<Instr> loadInstructionsFromCSV(string fullPath);
     static void writeResultsToCSV(
-        vector<FusionResults> const& results,
-        vector<FusionResults> const& aggregate_results,
+        ExperimentResults const& results,
         string resultsPath
     );
 };

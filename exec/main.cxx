@@ -39,126 +39,33 @@ int main(int argc, char const *argv[])
         name = fmt::format("{}/{}.csv", dirPath, name);
     }
 
-    // std::vector<std::string> combinedInstructions;
-    // combinedInstructions.reserve(
-    //     memoryInstructions.size() +
-    //     branchInstructions.size()
-    // );
-    
-    // combinedInstructions.insert(
-    //     combinedInstructions.end(),
-    //     memoryInstructions.begin(),
-    //     memoryInstructions.end()
-    // );
-    
-    // combinedInstructions.insert(
-    //     combinedInstructions.end(),
-    //     branchInstructions.begin(),
-    //     branchInstructions.end()
-    // );
-
-    // std::vector<fusion::FusionConfig> configs = {
-    //     fusion::FusionConfig {
-    //         .fusableName = "ARITHMETIC",
-    //         .fusable = arithmeticInstructions,
-    //         .independentInstructionsOnly = true
-    //     },
-    //     fusion::FusionConfig {
-    //         .fusableName = "ARITHMETIC",
-    //         .fusable = arithmeticInstructions,
-    //         .endName = "MEMORY",
-    //         .end = memoryInstructions,
-    //         .independentInstructionsOnly = true
-    //     },
-    //     fusion::FusionConfig {
-    //         .fusableName = "ARITHMETIC",
-    //         .fusable = arithmeticInstructions,
-    //         .endName = "BRANCH",
-    //         .end = branchInstructions,
-    //         .independentInstructionsOnly = true
-    //     },
-    //     fusion::FusionConfig {
-    //         .fusableName = "ARITHMETIC",
-    //         .fusable = arithmeticInstructions,
-    //         .endName = "MEMORY & BRANCH",
-    //         .end = combinedInstructions,
-    //         .independentInstructionsOnly = true
-    //     }
-    // };
-
-    // for (uint i = 1; i <= 6; i++) {
-    //     configs.push_back(
-    //         fusion::FusionConfig {
-    //             .fusableName = "ARITHMETIC",
-    //             .fusable = arithmeticInstructions,
-    //             .maxFusableLength = i,
-    //             .independentInstructionsOnly = true
-    //         }
-    //     );
-        
-    //     configs.push_back(
-    //         fusion::FusionConfig {
-    //             .fusableName = "ARITHMETIC",
-    //             .fusable = arithmeticInstructions,
-    //             .endName = "MEMORY",
-    //             .end = memoryInstructions,
-    //             .maxFusableLength = i,
-    //             .independentInstructionsOnly = true
-    //         }
-    //     );
-
-    //     configs.push_back(
-    //         fusion::FusionConfig {
-    //             .fusableName = "ARITHMETIC",
-    //             .fusable = arithmeticInstructions,
-    //             .endName = "BRANCH",
-    //             .end = branchInstructions,
-    //             .maxFusableLength = i,
-    //             .independentInstructionsOnly = true
-    //         }
-    //     );
-
-    //     configs.push_back(
-    //         fusion::FusionConfig {
-    //             .fusableName = "ARITHMETIC",
-    //             .fusable = arithmeticInstructions,
-    //             .endName = "MEMORY & BRANCH",
-    //             .end = combinedInstructions,
-    //             .maxFusableLength = i,
-    //             .independentInstructionsOnly = true
-    //         }
-    //     );
-    // }
-
-    std::vector<fusion::ExperimentRun> runs;
-    runs.emplace_back(fusion::ExperimentRun{
-        .title = "arithmetic only",
-        .rules = std::unordered_set<fusion::FusionRulePtr>{
-            std::make_shared<fusion::FusionRule>(fusion::arithmeticOnly)
+    std::vector<fusion::ExperimentRun> runs = {
+        fusion::ExperimentRun{
+            .title = "arithmetic only",
+            .rules = std::unordered_set<fusion::FusionRulePtr>{
+                std::make_shared<fusion::FusionRule>(fusion::arithmeticOnly)
+            }
+        },
+        fusion::ExperimentRun{
+            .title = "arithmetic end memory",
+            .rules = std::unordered_set<fusion::FusionRulePtr>{
+                std::make_shared<fusion::FusionRule>(fusion::arithmeticEndMemory)
+            }
+        },
+        fusion::ExperimentRun{
+            .title = "arithmetic end branch",
+            .rules = std::unordered_set<fusion::FusionRulePtr>{
+                std::make_shared<fusion::FusionRule>(fusion::arithmeticEndBranch)
+            }
+        },
+        fusion::ExperimentRun{
+            .title = "arithmetic end memory/branch",
+            .rules = std::unordered_set<fusion::FusionRulePtr>{
+                std::make_shared<fusion::FusionRule>(fusion::arithmeticEndMemory),
+                std::make_shared<fusion::FusionRule>(fusion::arithmeticEndBranch)
+            }
         }
-    });
-
-    runs.emplace_back(fusion::ExperimentRun{
-        .title = "arithmetic end memory",
-        .rules = std::unordered_set<fusion::FusionRulePtr>{
-            std::make_shared<fusion::FusionRule>(fusion::arithmeticEndMemory)
-        }
-    });
-
-    runs.emplace_back(fusion::ExperimentRun{
-        .title = "arithmetic end branch",
-        .rules = std::unordered_set<fusion::FusionRulePtr>{
-            std::make_shared<fusion::FusionRule>(fusion::arithmeticEndBranch)
-        }
-    });
-
-    runs.emplace_back(fusion::ExperimentRun{
-        .title = "arithmetic end memory/branch",
-        .rules = std::unordered_set<fusion::FusionRulePtr>{
-            std::make_shared<fusion::FusionRule>(fusion::arithmeticEndMemory),
-            std::make_shared<fusion::FusionRule>(fusion::arithmeticEndBranch)
-        }
-    });
+    };
 
     fusion::Experiment experiment(fileNames, runs);
     auto results = experiment.run();
