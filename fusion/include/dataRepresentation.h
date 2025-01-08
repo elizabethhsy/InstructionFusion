@@ -55,11 +55,11 @@ ostream& operator<<(ostream& os, Instr const& instr);
 
 struct FUSION_NO_EXPORT CriticalSection
 {
-    uint length;
-    uint count;
+    uint64_t length;
+    uint64_t count;
     const Instr* start;
 
-    CriticalSection(uint length, uint count, const Instr* start);
+    CriticalSection(uint64_t length, uint64_t count, const Instr* start);
 };
 
 struct File;
@@ -78,7 +78,7 @@ public:
 private:
     bool initialised;
 
-    void constructCriticalSections(vector<string> delimiters);
+    void constructCriticalSections(unordered_set<string> delimiters);
     float calculateAvgCriticalSectionSize();
     uint64_t calculateTotalInstructionNum();
 };

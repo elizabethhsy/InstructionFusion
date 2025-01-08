@@ -1,40 +1,27 @@
+#include "experiment.h"
 #include "fusion.h"
 
 #include <utility>
+#include <unordered_set>
+
+#include <boost/describe/enum.hpp>
+#include <boost/describe/enum_to_string.hpp>
 
 namespace fusion
 {
 
 using namespace std;
 
-string FusionConfig::toString() const
-{
-    return fmt::format(
-        "FusionConfig: fusable_name={}, end_name={}, max_fusable_length={}",
-        fusableName,
-        endName,
-        maxFusableLength
-    );
-}
-
-string FusionConfig::title() const
-{
-    return fmt::format(
-        "{}{} (max {})",
-        fusableName,
-        endName.empty() ? "" : " + END " + endName,
-        maxFusableLength
-    );
-}
-
 string FusionResults::toString() const
 {
     return fmt::format(
-        "FusionResults: file={}, config=({}), total_instructions={}, "
+        "FusionResults: file={}, "
+        // "config=({}), "
+        "total_instructions={}, "
         "instructions_after_fuse={}, fused_instructions={}, avg_fusion_length="
         "{}, fused_percentage={}",
         file.fileName,
-        config.toString(),
+        // config.toString(),
         totalInstructions,
         instructionsAfterFuse,
         fusedInstructions,
@@ -43,116 +30,8 @@ string FusionResults::toString() const
     );
 }
 
-FusionResults FusionCalculator::calculateFusion(
-    File const& file,
-    FusionConfig const& config
-)
-{
-    uint64_t instructionsAfterFuse = 0;
-    float numBlocks = 0;
-    vector<pair<uint, uint>> fusionLengths;
-    unordered_set<Operand> dependentOperands;
-
-    auto const& fusable = config.fusable;
-    auto const& end = config.end;
-
-    auto maxFusableLength = config.maxFusableLength;
-    if (!config.maxFusableLength) {
-        maxFusableLength = UINT64_MAX;
-    }
-
-    for (auto const& criticalSection : file.stats->criticalSections) {
-        const auto* startInstr = criticalSection->start;
-        auto startIdx = distance(&file.instructions[0], startInstr);
-        uint blockLength = 0;
-
-        auto record_end_of_block = [&]()
-        {
-            if (blockLength == 0) return;
-
-            instructionsAfterFuse += criticalSection->count;
-            numBlocks += criticalSection->count;
-            fusionLengths.push_back(
-                make_pair(criticalSection->count, blockLength)
-            );
-            blockLength = 0;
-            dependentOperands.clear();
-        };
-
-        LOG_DEBUG(
-            fmt::format("critical_section_length={}", criticalSection->length)
-        );
-
-        for (int i = 0; i < criticalSection->length; i++) {
-            auto const& instruction = file.instructions[startIdx+i];
-            auto const& prevInstruction = file.instructions[startIdx + max(i-1, 0)];
-
-            LOG_DEBUG(fmt::format("block_length={}", blockLength));
-
-            // if the instruction is in the end block, record the end of the
-            // fusable block to be after this instruction:
-            // ------
-            // fusable block
-            // current instruction
-            // ------
-            if (count(end.begin(), end.end(), instruction.instr) != 0
-                && blockLength < maxFusableLength
-                && (!config.independentInstructionsOnly ||
-                    !Instr::dependentOperands(instruction, dependentOperands)))
-            {
-                LOG_DEBUG(fmt::format("fusing {}", instruction.toString()));
-                blockLength++;
-                record_end_of_block();
-            }
-            // if the instruction is not fusable, record the end of the fusable
-            // block to be before this instruction:
-            // ------
-            // fusable block
-            // ------
-            // current instruction
-            // ------
-            else if (
-                count(fusable.begin(), fusable.end(), instruction.instr) == 0
-                || blockLength >= maxFusableLength
-                || (config.independentInstructionsOnly &&
-                    Instr::dependentOperands(instruction, dependentOperands))
-            ) {
-                record_end_of_block();
-                blockLength++;
-                record_end_of_block();
-            }
-            else {
-                LOG_DEBUG(fmt::format("fusing {}", instruction.toString()));
-                dependentOperands.insert(
-                    instruction.operands.begin(),
-                    instruction.operands.end()
-                );
-                blockLength++;
-            }
-        }
-        record_end_of_block();
-    }
-
-    auto totalInstructions = file.stats->totalInstructionNum;
-    auto fusedInstructions = totalInstructions - instructionsAfterFuse;
-    auto fusedPercentage = 100*(fusedInstructions)/double(totalInstructions);
-
-    FusionResults results{
-        .file = file,
-        .config = config,
-        .totalInstructions = totalInstructions,
-        .instructionsAfterFuse = instructionsAfterFuse,
-        .fusedInstructions = fusedInstructions,
-        .fusedPercentage = fusedPercentage,
-        .fusionLengths = fusionLengths,
-        .avgFusionLength = calcAvgFusionLength(fusionLengths)
-    };
-
-    return results;
-}
-
 float FusionCalculator::calcAvgFusionLength(
-    vector<pair<uint, uint>> const& fusionLengths
+    vector<pair<uint64_t, uint64_t>> const& fusionLengths
 )
 {
     double avgLength = 0;
@@ -167,6 +46,128 @@ float FusionCalculator::calcAvgFusionLength(
     }
     avgLength = double(avgLength)/totalCount;
     return avgLength;
+}
+
+FusionResults FusionCalculator::calculateFusion(
+    File const& file,
+    ExperimentRun const& run)
+{
+    LOG_DEBUG(
+        fmt::format(
+            "starting run: {}, {} fusion rule(s) found",
+            run.title,
+            run.rules.size()
+        )
+    );
+
+    vector<shared_ptr<Instr>> currBlock;
+    auto const& rulePtrs = run.rules;
+    uint64_t dynamicCount = 0;
+    auto functionPtrs = rulePtrs;
+
+    // keep track of results
+    uint64_t instructionsAfterFuse = 0;
+    vector<pair<uint64_t, uint64_t>> fusionLengths;
+
+    // record the results, and start a new round
+    auto new_round = [&](uint64_t count) {
+        if (currBlock.size() == 0) return;
+        
+        // record the results
+        instructionsAfterFuse += count;
+        fusionLengths.push_back(make_pair(count, currBlock.size()));
+
+        // reset the tracking variables
+        currBlock.clear();
+        functionPtrs = rulePtrs;
+    };
+
+    // iterate through every instruction. For each instruction, we iterate over
+    // all the functions that are still in contention.
+    for (auto const& instruction : file.instructions) {
+        bool endOfFusable = false;
+
+        // if we're starting a new critical section, then reset the round
+        if (instruction.count != dynamicCount) {
+            new_round(dynamicCount);
+            dynamicCount = instruction.count;
+        }
+
+        for (auto fun : functionPtrs) {
+            auto result = (*fun)(currBlock, instruction);
+            LOG_DEBUG(
+                fmt::format(
+                    "FusableResult type of {}",
+                    boost::describe::enum_to_string(result, "unknown")
+                )
+            );
+            switch (result) {
+                case FusableResult::FUSABLE:
+                {
+                    // leave the function in the set
+                    break;
+                }
+                case FusableResult::END_OF_FUSABLE:
+                {
+                    // remove the function from the set, but also set a flag
+                    endOfFusable = true;
+                    functionPtrs.erase(fun);
+                    break;
+                }
+                case FusableResult::NOT_FUSABLE:
+                {
+                    // remove the function from the set
+                    functionPtrs.erase(fun);
+                    break;
+                }
+                default:
+                {
+                    LOG_ERROR(
+                        fmt::format(
+                            "Invalid FusableResult type of {}",
+                            boost::describe::enum_to_string(result, "unknown")
+                        )
+                    );
+                }
+            }
+        }
+
+        // if there are no functions left in the set, then this is the
+        // biggest block that can be fused and we wrap it up. Otherwise,
+        // we continue with the next instruction.
+        if (functionPtrs.empty()) {
+            // there are no functions in the set, so we wrap up the round and start
+            // a new one with a fresh copy of functionPtrs.
+            if (endOfFusable) {
+                currBlock.push_back(make_shared<Instr>(instruction));
+                new_round(dynamicCount);
+            } else {
+                new_round(dynamicCount);
+                dynamicCount = instruction.count;
+                currBlock.push_back(make_shared<Instr>(instruction));
+                new_round(dynamicCount);
+            }
+        } else {
+            currBlock.push_back(make_shared<Instr>(instruction));
+        }
+    }
+    new_round(dynamicCount); // wrap up the final block
+
+    // calculate stats
+    auto totalInstructions = file.stats->totalInstructionNum;
+    auto fusedInstructions = totalInstructions - instructionsAfterFuse;
+    auto fusedPercentage = 100*(fusedInstructions)/double(totalInstructions);
+
+    return FusionResults{
+        .file = file,
+        .run = run,
+        .totalInstructions = totalInstructions,
+        .instructionsAfterFuse = instructionsAfterFuse,
+        .fusedInstructions = fusedInstructions,
+        .fusedPercentage = fusedPercentage,
+        .fusionLengths = fusionLengths,
+        .avgFusionLength = calcAvgFusionLength(fusionLengths)
+    };
 }
 
 }

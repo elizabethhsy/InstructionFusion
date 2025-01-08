@@ -11,8 +11,8 @@ using namespace std;
 
 Experiment::Experiment(
     vector<string> filepaths,
-    vector<FusionConfig> const& configs
-) : configs(configs)
+    vector<ExperimentRun> const& runs
+) : runs(runs)
 {
     // create the necessary file objects
     for (auto filepath : filepaths) {
@@ -65,22 +65,22 @@ uint64_t Experiment::totalInstructionNum()
     return totalInstructionNum;
 }
 
-void Experiment::run(string resultsPath)
+ExperimentResults Experiment::run()
 {
     FusionCalculator calculator;
     vector<FusionResults> results;
-    vector<FusionResults> aggregate_results;
-    vector<FusionResults> aggregate_temp;
-
-    auto run_experiment = [&](FusionConfig const& config) {
-        aggregate_temp.clear();
-        LOG_INFO(config.title());
+    vector<FusionResults> aggregateResults;
+    vector<FusionResults> aggregateTemp;
+    
+    auto run_experiment = [&](ExperimentRun const& run) {
+        aggregateTemp.clear();
+        LOG_INFO(run.title);
         for (auto const& file : files) {
             FusionResults result = calculator.calculateFusion(
                 *file,
-                config
+                run
             );
-            
+
             auto const& totalBefore = result.totalInstructions;
             auto const& totalAfter = result.instructionsAfterFuse;
 
@@ -97,17 +97,17 @@ void Experiment::run(string resultsPath)
                 )
             );
 
-            aggregate_temp.push_back(result);
+            aggregateTemp.push_back(result);
             results.push_back(std::move(result));
         }
 
-        // collect aggregate results across all files for each config
+        // collect aggregate results across all files for each run
         FusionResults r{
             .file = *files[0],
-            .config = config
+            .run = run
         };
-        // r.config = config;
-        for (auto const& res : aggregate_temp) {
+
+        for (auto const& res : aggregateTemp) {
             r.totalInstructions += res.totalInstructions;
             r.instructionsAfterFuse += res.instructionsAfterFuse;
             r.fusedInstructions += res.fusedInstructions;
@@ -121,16 +121,24 @@ void Experiment::run(string resultsPath)
             FusionCalculator::calcAvgFusionLength(r.fusionLengths);
         r.fusedPercentage =
             100*(r.fusedInstructions)/double(r.totalInstructions);
-        aggregate_results.push_back(r);
+        aggregateResults.push_back(r);
     };
 
-    for (auto const& config : configs) {
-        run_experiment(config);
+    for (auto const& run : runs) {
+        run_experiment(run);
     }
 
+    return ExperimentResults{
+        .results = results,
+        .aggregateResults = aggregateResults
+    };
+}
+
+void Experiment::save(ExperimentResults const& results, string resultsPath)
+{
     CSVHandler::writeResultsToCSV(
-        results,
-        aggregate_results,
+        results.results,
+        results.aggregateResults,
         resultsPath
     );
 }

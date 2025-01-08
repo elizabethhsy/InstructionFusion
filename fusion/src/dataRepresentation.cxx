@@ -81,7 +81,8 @@ ostream& operator<<(ostream& os, Instr const& instr) {
     return os;
 }
 
-CriticalSection::CriticalSection(uint length, uint count, const Instr* start)
+CriticalSection::CriticalSection(
+    uint64_t length, uint64_t count, const Instr* start)
     : length(length), count(count), start(start) {}
 
 FileStats::FileStats(File const* file)
@@ -117,9 +118,9 @@ void FileStats::calculateStats()
     initialised = true;
 }
 
-void FileStats::constructCriticalSections(vector<string> delimiters)
+void FileStats::constructCriticalSections(unordered_set<string> delimiters)
 {
-    uint length, count;
+    uint64_t length, count;
     bool startOfCriticalSection;
 
     auto& instructions = file->instructions;
@@ -173,19 +174,18 @@ void FileStats::constructCriticalSections(vector<string> delimiters)
 
         int diff = abs(static_cast<int>(instruction.count - nextInstruction.count));
         if (
-            (find(delimiters.begin(), delimiters.end(), instruction.instr)
-            != delimiters.end()) || diff >= 1 ||
+            delimiters.contains(instruction.instr) || diff >= 1 ||
             (!Instr::isContiguous(prevInstruction, instruction) && i > 0) ||
             (i == n-1) // end of the file
             )
         {
-            LOG_DEBUG(
-                fmt::format(
-                    "start_instruction={}\nend_instruction={}\n",
-                    startInstr->toString(),
-                    instruction.toString()
-                )
-            );
+            // LOG_DEBUG(
+            //     fmt::format(
+            //         "start_instruction={}\nend_instruction={}\n",
+            //         startInstr->toString(),
+            //         instruction.toString()
+            //     )
+            // );
             // record new critical section
             criticalSections.push_back(
                 make_unique<CriticalSection>(length, count, startInstr)
@@ -194,7 +194,7 @@ void FileStats::constructCriticalSections(vector<string> delimiters)
         }
     }
 
-    uint total = 0;
+    uint64_t total = 0;
     for (auto& criticalSection : criticalSections) {
         total += criticalSection->length*criticalSection->count;
     }

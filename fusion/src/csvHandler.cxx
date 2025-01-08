@@ -66,15 +66,15 @@ void CSVHandler::writeResultsToCSV(
         );
         return;
     }
-    aggregateFile << "fusable,end,max_fusable_length,total_instructions,"
-        "instructions_after_fuse,instructions_fused,percentage_fused,"
-        "average_fusion_length\n";
+    aggregateFile << // "fusable,end,max_fusable_length,"
+        "total_instructions,instructions_after_fuse,instructions_fused,"
+        "percentage_fused,average_fusion_length\n";
     for (auto result : aggregate_results) {
         aggregateFile << fmt::format(
-            "{},{},{},{},{},{},{},{}\n",
-            result.config.fusableName,
-            result.config.endName,
-            result.config.maxFusableLength,
+            "{},{},{},{},{}\n",
+            // result.config.fusableName,
+            // result.config.endName,
+            // result.config.maxFusableLength,
             result.totalInstructions,
             result.instructionsAfterFuse,
             result.fusedInstructions,
@@ -101,17 +101,19 @@ void CSVHandler::writeResultsToCSV(
     // file, fusable, end, max_fusable_length, total_instructions,
     // instructions_after_fuse, instructions_fused, percentage_fused,
     // average_fusion_length
-    overviewFile << "file,fusable,end,max_fusable_length,total_instructions,"
+    overviewFile << "file,"
+        // "fusable,end,max_fusable_length,"
+        "total_instructions,"
         "instructions_after_fuse,instructions_fused,percentage_fused,"
         "average_fusion_length\n";
 
     for (auto result : results) {
         overviewFile << fmt::format(
-            "{},{},{},{},{},{},{},{},{}\n",
+            "{},{},{},{},{},{}\n",
             result.file.fileName,
-            result.config.fusableName,
-            result.config.endName,
-            result.config.maxFusableLength,
+            // result.config.fusableName,
+            // result.config.endName,
+            // result.config.maxFusableLength,
             result.totalInstructions,
             result.instructionsAfterFuse,
             result.fusedInstructions,
@@ -134,7 +136,9 @@ void CSVHandler::writeResultsToCSV(
         return;
     }
 
-    fusionLengthFile << "file,fusable,end,max_fusable_length,count,"
+    fusionLengthFile << "file,"
+    // "fusable,end,max_fusable_length,"
+    "count,"
         "fusion_length\n";
     
     for (auto result : results) {
@@ -143,11 +147,11 @@ void CSVHandler::writeResultsToCSV(
             auto length = pair.second;
 
             fusionLengthFile << fmt::format(
-                "{},{},{},{},{},{}\n",
+                "{},{},{}\n",
                 result.file.fileName,
-                result.config.fusableName,
-                result.config.endName,
-                result.config.maxFusableLength,
+                // result.config.fusableName,
+                // result.config.endName,
+                // result.config.maxFusableLength,
                 count,
                 length
             );

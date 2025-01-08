@@ -1,14 +1,13 @@
 #pragma once
 
-#include <string>
-#include <unordered_set>
+#include <fusion_export.h>
 
-namespace fusion
-{
+#include <string>
+#include <vector>
 
 using namespace std;
 
-const unordered_set<string> arithmeticInstructions = {
+const vector<string> arithmeticInstructions = {
     "add", "addi", "addiw", "addw", "and", "andi", "auipcc", "c.add", "c.addi", "c.addiw", "c.addw", 
     "c.and", "c.andi", "c.mv", "c.or", "c.slli", "c.srai", "c.srli", "c.sub", "c.subw", "c.xor",
     "camoadd.d", "camoadd.d.aqrl", "camoadd.w", "camoadd.w.aqrl", "camoadd.w.rl", "candperm",
@@ -29,19 +28,17 @@ const unordered_set<string> arithmeticInstructions = {
     "subw", "xor", "xori"
 };
 
-const unordered_set<string> branchInstructions = {
+const vector<string> branchInstructions = {
     "beq", "beqz", "bge", "bgeu", "bgez", "bgtz", "blez", "blt", "bltu", "bltz", "bne", "bnez",
     "c.beqz", "c.bnez", "cjal", "cjalr", "j", "jalr", "jr", "ret"
 };
 
-const unordered_set<string> memoryInstructions = {
+const vector<string> memoryInstructions = {
     "c.li", "c.lui", "cfld", "cflw", "cfsd", "cfsw", "clb", "clbu", "clc", "cld",
     "clh", "clhu", "clr.b.aq", "clr.w.aqrl", "clw", "clwu", "crrl", "csb", "csc",
     "csc.b", "csc.w.aqrl", "csd", "csh", "csw", "lui"
 };
 
-const unordered_set<string> systemInstructions = {
+const vector<string> systemInstructions = {
     "<unknown>", "ecall", "fence"
 };
-
-}
