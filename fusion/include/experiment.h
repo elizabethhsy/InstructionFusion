@@ -17,6 +17,8 @@ struct FUSION_EXPORT ExperimentRun
 {
     string title;
     string description;
+    // user-defined key that users can use to identify rules
+    string userDefinedKey;
     unordered_set<FusionRulePtr> rules;
 };
 

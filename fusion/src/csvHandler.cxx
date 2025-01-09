@@ -66,9 +66,9 @@ void CSVHandler::writeResultsToCSV(
         );
         return;
     }
-    aggregateFile << "rule_title,rule_description,total_instructions,"
-        "instructions_after_fuse,instructions_fused,percentage_fused,"
-        "average_fusion_length\n";
+    aggregateFile << "rule_title,rule_description,user_defined_key,"
+        "total_instructions,instructions_after_fuse,instructions_fused,"
+        "percentage_fused,average_fusion_length\n";
     
     ofstream overviewFile(overviewCSV);
     if (!overviewFile.is_open()) {
@@ -80,16 +80,17 @@ void CSVHandler::writeResultsToCSV(
         );
         return;
     }
-    overviewFile << "rule_title,rule_description,file,total_instructions,"
-        "instructions_after_fuse,instructions_fused,percentage_fused,"
-        "average_fusion_length\n";
+    overviewFile << "rule_title,rule_description,user_defined_key,file,"
+        "total_instructions,instructions_after_fuse,instructions_fused,"
+        "percentage_fused,average_fusion_length\n";
 
     for (auto const& run : results.runResults) {
         for (auto const& res : run.fusionResults) {
             overviewFile << fmt::format(
-                "{},{},{},{},{},{},{},{}\n",
+                "{},{},{},{},{},{},{},{},{}\n",
                 res.run.title,
                 res.run.description,
+                res.run.userDefinedKey,
                 res.file.fileName,
                 res.totalInstructions,
                 res.instructionsAfterFuse,
@@ -100,9 +101,10 @@ void CSVHandler::writeResultsToCSV(
         }
 
         aggregateFile << fmt::format(
-            "{},{},{},{},{},{},{}\n",
+            "{},{},{},{},{},{},{},{}\n",
             run.aggregateResults.run.title,
             run.aggregateResults.run.description,
+            run.aggregateResults.run.userDefinedKey,
             run.aggregateResults.totalInstructions,
             run.aggregateResults.instructionsAfterFuse,
             run.aggregateResults.fusedInstructions,
@@ -121,16 +123,17 @@ void CSVHandler::writeResultsToCSV(
         );
         return;
     }
-    fusionLengthFile << "rule_title,file,rule_description,count,"
-        "fusion_length\n";
+    fusionLengthFile << "rule_title,rule_description,user_defined_key,file,"
+        "count,fusion_length\n";
 
     for (auto const& run : results.runResults) {
         for (auto const& res : run.fusionResults) {
             for (auto const& pair : res.fusionLengths) { // pair of count, length
                 fusionLengthFile << fmt::format(
-                    "{},{},{},{},{}\n",
+                    "{},{},{},{},{},{}\n",
                     res.run.title,
                     res.run.description,
+                    res.run.userDefinedKey,
                     res.file.fileName,
                     pair.first, // count
                     pair.second // length

@@ -42,30 +42,52 @@ int main(int argc, char const *argv[])
     std::vector<fusion::ExperimentRun> runs = {
         fusion::ExperimentRun{
             .title = "arithmetic only",
+            .userDefinedKey = "0",
             .rules = std::unordered_set<fusion::FusionRulePtr>{
                 std::make_shared<fusion::FusionRule>(fusion::arithmeticOnly)
             }
         },
         fusion::ExperimentRun{
             .title = "arithmetic end memory",
+            .userDefinedKey = "0",
             .rules = std::unordered_set<fusion::FusionRulePtr>{
                 std::make_shared<fusion::FusionRule>(fusion::arithmeticEndMemory)
             }
         },
         fusion::ExperimentRun{
             .title = "arithmetic end branch",
+            .userDefinedKey = "0",
             .rules = std::unordered_set<fusion::FusionRulePtr>{
                 std::make_shared<fusion::FusionRule>(fusion::arithmeticEndBranch)
             }
         },
         fusion::ExperimentRun{
             .title = "arithmetic end memory/branch",
+            .userDefinedKey = "0",
             .rules = std::unordered_set<fusion::FusionRulePtr>{
                 std::make_shared<fusion::FusionRule>(fusion::arithmeticEndMemory),
                 std::make_shared<fusion::FusionRule>(fusion::arithmeticEndBranch)
             }
         }
     };
+
+    for (int i = 1; i < 6; i++) {
+        runs.push_back(
+            fusion::ExperimentRun{
+                .title = fmt::format("arithmetic only max {}", i),
+                .userDefinedKey = fmt::format("{}", i),
+                .rules = std::unordered_set<fusion::FusionRulePtr>{
+                    std::make_shared<fusion::FusionRule>(
+                        fusion::curriedRule(
+                            fusion::maxLength,
+                            fusion::arithmeticOnly,
+                            i
+                        )
+                    )
+                }
+            }
+        );
+    }
 
     fusion::Experiment experiment(fileNames, runs);
     auto results = experiment.run();

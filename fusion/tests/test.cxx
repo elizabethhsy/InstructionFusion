@@ -71,12 +71,17 @@ TEST_CASE("test fusion", "[fusion]") {
                     FusableResult::NOT_FUSABLE;
             };
 
-        FusionRule functionMaxLength =
-            [&](vector<shared_ptr<Instr>> const& block, Instr const& instruction)
-                -> FusableResult
-            {
-                return maxLength(2, make_shared<FusionRule>(FusionRule(function)), block, instruction);
-            };
+        FusionRule functionMaxLength = curriedRule(maxLength, function, 2);
+            // [&](vector<shared_ptr<Instr>> const& block, Instr const& instruction)
+            //     -> FusableResult
+            // {
+            //     return maxLength(
+            //         make_shared<FusionRule>(FusionRule(function)),
+            //         block,
+            //         instruction,
+            //         2
+            //     );
+            // };
 
         unordered_set<FusionRulePtr> functions;
         functions.insert(make_shared<FusionRule>(functionMaxLength));

@@ -54,14 +54,30 @@ FusableResult FUSION_EXPORT arithmeticEndBranch(
 // first check if the maximum length of a fusable block is exceeded, then call
 // another fusion rule
 FusableResult FUSION_EXPORT maxLength(
-    uint64_t length,
-    FusionRulePtr rule,
+    FusionRule rule,
     vector<shared_ptr<Instr>> const& block,
-    Instr const& instruction
+    Instr const& instruction,
+    uint64_t length
 )
 {
     if (block.size() >= length) return FusableResult::NOT_FUSABLE;
-    return (*rule)(block, instruction);
+    return rule(block, instruction);
+}
+
+template<typename CurriedRule, typename... Args>
+FusionRule FUSION_EXPORT curriedRule(
+    CurriedRule rule1,
+    FusionRule rule2,
+    Args... args
+)
+{
+    return 
+        [rule1, rule2, ...args = std::forward<Args>(args)]
+        (vector<shared_ptr<Instr>> const& block, Instr const& instruction)
+            -> FusableResult
+        {
+            return rule1(rule2, block, instruction, args...);
+        };
 }
 
 }
