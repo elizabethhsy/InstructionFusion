@@ -31,16 +31,16 @@ TEST_CASE("test fusion", "[fusion]") {
     // once we parsed the file correctly, try to fuse it
     FusionCalculator calculator;
     SECTION("fuse with custom functions", "[fusion]") {
-        FusionRule function =
+        FusionRuleStruct function(
             [&](vector<shared_ptr<Instr>> const& block, Instr const& instruction)
                 -> FusableResult
-        {
-            return (instruction.instr == "csc") ? FusableResult::FUSABLE :
-                FusableResult::NOT_FUSABLE;
-        };
+            {
+                return (instruction.instr == "csc") ? FusableResult::FUSABLE :
+                    FusableResult::NOT_FUSABLE;
+            });
 
-        unordered_set<FusionRulePtr> functions;
-        functions.insert(make_shared<FusionRule>(function));
+        unordered_set<FusionRuleStructPtr> functions;
+        functions.insert(make_shared<FusionRuleStruct>(function));
         ExperimentRun run{
             .title = "csc",
             .rules = functions
@@ -63,28 +63,18 @@ TEST_CASE("test fusion", "[fusion]") {
     }
 
     SECTION("limit maximum fusable length", "[fusion]") {
-        FusionRule function =
+        FusionRuleStruct function(
             [&](vector<shared_ptr<Instr>> const& block, Instr const& instruction)
                 -> FusableResult
             {
                 return (instruction.instr == "csc") ? FusableResult::FUSABLE :
                     FusableResult::NOT_FUSABLE;
-            };
+            });
 
-        FusionRule functionMaxLength = curriedRule(maxLength, function, 2);
-            // [&](vector<shared_ptr<Instr>> const& block, Instr const& instruction)
-            //     -> FusableResult
-            // {
-            //     return maxLength(
-            //         make_shared<FusionRule>(FusionRule(function)),
-            //         block,
-            //         instruction,
-            //         2
-            //     );
-            // };
+        FusionRuleStruct functionMaxLength = maxLength(2).chain(function);
 
-        unordered_set<FusionRulePtr> functions;
-        functions.insert(make_shared<FusionRule>(functionMaxLength));
+        unordered_set<FusionRuleStructPtr> functions;
+        functions.insert(make_shared<FusionRuleStruct>(functionMaxLength));
         ExperimentRun run{
             .title = "csc max length 2",
             .rules = functions
@@ -100,17 +90,17 @@ TEST_CASE("test fusion", "[fusion]") {
     }
 
     SECTION("fuse with end instructions", "[fusion]") {
-        FusionRule function =
+        FusionRuleStruct function(
             [&](vector<shared_ptr<Instr>> const& block, Instr const& instruction)
                 -> FusableResult
             {
                 if (instruction.instr == "csc") return FusableResult::FUSABLE;
                 if (instruction.instr == "cincoffset") return FusableResult::END_OF_FUSABLE;
                 return FusableResult::NOT_FUSABLE;
-            }; // fuse the first 6 instructions
+            }); // fuse the first 6 instructions
 
-        unordered_set<FusionRulePtr> functions;
-        functions.insert(make_shared<FusionRule>(function));
+        unordered_set<FusionRuleStructPtr> functions;
+        functions.insert(make_shared<FusionRuleStruct>(function));
         ExperimentRun run{
             .title = "csc + end cincoffset",
             .rules = functions
@@ -125,64 +115,81 @@ TEST_CASE("test fusion", "[fusion]") {
     }
 
     SECTION("fuse with independent instructions only", "[fusion]") {
-        FusionRule fusable =
+        FusionRuleStruct fusable(
             [&](vector<shared_ptr<Instr>> const& block, Instr const& instruction)
                 -> FusableResult
             {
                 unordered_set<string> fusable = {"snez", "and"};
                 return (fusable.contains(instruction.instr))
                     ? FusableResult::FUSABLE : FusableResult::NOT_FUSABLE;
-            };
+            });
         
-        FusionRule independent =
-            [&](vector<shared_ptr<Instr>> const& block, Instr const& instruction)
-                -> FusableResult
-            {
-                // LOG_DEBUG(fmt::format("block_size={}", block.size()));
-                unordered_set<Operand> operands;
-                for (auto instr : block) {
-                    // LOG_DEBUG(fmt::format("instruction={}", instr->toString()));
-                    for (auto op : instr->operands) {
-                        if (operands.contains(op)) {
-                            // LOG_DEBUG(fmt::format("prefix block is not fusable"));
-                            return FusableResult::NOT_FUSABLE;
-                        }
-                        operands.insert(op);
-                    }
-                }
-
-                for (auto op : instruction.operands) {
-                    if (operands.contains(op)) return FusableResult::NOT_FUSABLE;
-                    operands.insert(op);
-                }
-                return fusable(block, instruction);
-            };
-        
-        unordered_set<FusionRulePtr> functions1;
-        unordered_set<FusionRulePtr> functions2;
-        functions1.insert(make_shared<FusionRule>(fusable));
-        functions2.insert(make_shared<FusionRule>(independent));
+        unordered_set<FusionRuleStructPtr> functions1;
+        functions1.insert(make_shared<FusionRuleStruct>(fusable));
         ExperimentRun run1{
             .title = "snez/and",
             .rules = functions1
         };
-        ExperimentRun run2{
-            .title = "snez/and, independent",
-            .rules = functions2
-        };
-
         auto results1 = calculator.calculateFusion(
             file,
             run1
         );
+        REQUIRE(results1.fusedInstructions == 128);
 
+        unordered_set<FusionRuleStructPtr> functions2;
+        functions2.insert(make_shared<FusionRuleStruct>(
+            independentInstructions.chain(fusable)
+        ));
+        ExperimentRun run2{
+            .title = "snez/and, independent",
+            .rules = functions2
+        };
         auto results2 = calculator.calculateFusion(
             file,
             run2
         );
-
-        REQUIRE(results1.fusedInstructions == 128);
         REQUIRE(results2.fusedInstructions == 0);
+    }
+
+    SECTION("multiple fusion rules", "[fusion]") {
+        FusionRuleStruct cspecialrFunction(
+            [&](vector<shared_ptr<Instr>> const& block, Instr const& instruction)
+                -> FusableResult
+            {
+                if (instruction.instr == "cincoffset")
+                    return FusableResult::FUSABLE;
+                if (instruction.instr == "cspecialr")
+                    return FusableResult::END_OF_FUSABLE;
+                return FusableResult::NOT_FUSABLE;
+            });
+
+        FusionRuleStruct cldFunction(
+            [&](vector<shared_ptr<Instr>> const& block, Instr const& instruction)
+                -> FusableResult
+            {
+                if (instruction.instr == "cincoffset")
+                    return FusableResult::FUSABLE;
+                if (instruction.instr == "cld")
+                    return FusableResult::END_OF_FUSABLE;
+                return FusableResult::NOT_FUSABLE;
+            });
+
+        unordered_set<FusionRuleStructPtr> functions = {
+            make_shared<FusionRuleStruct>(maxLength(3).chain(cspecialrFunction)),
+            make_shared<FusionRuleStruct>(maxLength(3).chain(cldFunction))
+        };
+
+        ExperimentRun run{
+            .title = "cincoffset",
+            .rules = functions
+        };
+
+        auto results = calculator.calculateFusion(
+            file,
+            run
+        );
+
+        REQUIRE(results.fusedInstructions == 112);
     }
 }
 

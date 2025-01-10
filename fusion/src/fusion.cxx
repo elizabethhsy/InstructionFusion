@@ -61,9 +61,9 @@ FusionResults FusionCalculator::calculateFusion(
     );
 
     vector<shared_ptr<Instr>> currBlock;
-    auto const& rulePtrs = run.rules;
+    auto const& rules = run.rules;
     uint64_t dynamicCount = 0;
-    auto functionPtrs = rulePtrs;
+    auto tempRules = rules;
 
     // keep track of results
     uint64_t instructionsAfterFuse = 0;
@@ -79,7 +79,7 @@ FusionResults FusionCalculator::calculateFusion(
 
         // reset the tracking variables
         currBlock.clear();
-        functionPtrs = rulePtrs;
+        tempRules = rules;
     };
 
     // iterate through every instruction. For each instruction, we iterate over
@@ -93,8 +93,8 @@ FusionResults FusionCalculator::calculateFusion(
             dynamicCount = instruction.count;
         }
 
-        for (auto fun : functionPtrs) {
-            auto result = (*fun)(currBlock, instruction);
+        for (auto fun : rules) {
+            auto result = fun->apply(currBlock, instruction);
             LOG_DEBUG(
                 fmt::format(
                     "FusableResult type of {}",
@@ -111,13 +111,13 @@ FusionResults FusionCalculator::calculateFusion(
                 {
                     // remove the function from the set, but also set a flag
                     endOfFusable = true;
-                    functionPtrs.erase(fun);
+                    tempRules.erase(fun);
                     break;
                 }
                 case FusableResult::NOT_FUSABLE:
                 {
                     // remove the function from the set
-                    functionPtrs.erase(fun);
+                    tempRules.erase(fun);
                     break;
                 }
                 default:
@@ -135,9 +135,9 @@ FusionResults FusionCalculator::calculateFusion(
         // if there are no functions left in the set, then this is the
         // biggest block that can be fused and we wrap it up. Otherwise,
         // we continue with the next instruction.
-        if (functionPtrs.empty()) {
+        if (tempRules.empty()) {
             // there are no functions in the set, so we wrap up the round and start
-            // a new one with a fresh copy of functionPtrs.
+            // a new one with a fresh copy of tempRules.
             if (endOfFusable) {
                 currBlock.push_back(make_shared<Instr>(instruction));
                 new_round(dynamicCount);

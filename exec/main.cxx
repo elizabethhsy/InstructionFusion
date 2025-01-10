@@ -43,46 +43,81 @@ int main(int argc, char const *argv[])
         fusion::ExperimentRun{
             .title = "arithmetic only",
             .userDefinedKey = "0",
-            .rules = std::unordered_set<fusion::FusionRulePtr>{
-                std::make_shared<fusion::FusionRule>(fusion::arithmeticOnly)
+            .rules = std::unordered_set<fusion::FusionRuleStructPtr>{
+                std::make_shared<fusion::FusionRuleStruct>(fusion::arithmeticOnly)
             }
         },
         fusion::ExperimentRun{
             .title = "arithmetic end memory",
             .userDefinedKey = "0",
-            .rules = std::unordered_set<fusion::FusionRulePtr>{
-                std::make_shared<fusion::FusionRule>(fusion::arithmeticEndMemory)
+            .rules = std::unordered_set<fusion::FusionRuleStructPtr>{
+                std::make_shared<fusion::FusionRuleStruct>(fusion::arithmeticEndMemory)
             }
         },
         fusion::ExperimentRun{
             .title = "arithmetic end branch",
             .userDefinedKey = "0",
-            .rules = std::unordered_set<fusion::FusionRulePtr>{
-                std::make_shared<fusion::FusionRule>(fusion::arithmeticEndBranch)
+            .rules = std::unordered_set<fusion::FusionRuleStructPtr>{
+                std::make_shared<fusion::FusionRuleStruct>(fusion::arithmeticEndBranch)
             }
         },
         fusion::ExperimentRun{
             .title = "arithmetic end memory/branch",
             .userDefinedKey = "0",
-            .rules = std::unordered_set<fusion::FusionRulePtr>{
-                std::make_shared<fusion::FusionRule>(fusion::arithmeticEndMemory),
-                std::make_shared<fusion::FusionRule>(fusion::arithmeticEndBranch)
+            .rules = std::unordered_set<fusion::FusionRuleStructPtr>{
+                std::make_shared<fusion::FusionRuleStruct>(fusion::arithmeticEndMemory),
+                std::make_shared<fusion::FusionRuleStruct>(fusion::arithmeticEndBranch)
             }
         }
     };
 
-    for (int i = 1; i < 6; i++) {
+    for (int i = 1; i <= 10; i++) {
         runs.push_back(
             fusion::ExperimentRun{
-                .title = fmt::format("arithmetic only max {}", i),
+                .title = "arithmetic only",
                 .userDefinedKey = fmt::format("{}", i),
-                .rules = std::unordered_set<fusion::FusionRulePtr>{
-                    std::make_shared<fusion::FusionRule>(
-                        fusion::curriedRule(
-                            fusion::maxLength,
-                            fusion::arithmeticOnly,
-                            i
-                        )
+                .rules = std::unordered_set<fusion::FusionRuleStructPtr>{
+                    std::make_shared<fusion::FusionRuleStruct>(
+                        fusion::maxLength(i).chain(fusion::arithmeticOnly)
+                    )
+                }
+            }
+        );
+
+        runs.push_back(
+            fusion::ExperimentRun{
+                .title = "arithmetic end memory",
+                .userDefinedKey = fmt::format("{}", i),
+                .rules = std::unordered_set<fusion::FusionRuleStructPtr>{
+                    std::make_shared<fusion::FusionRuleStruct>(
+                        fusion::maxLength(i).chain(fusion::arithmeticEndMemory)
+                    )
+                }
+            }
+        );
+
+        runs.push_back(
+            fusion::ExperimentRun{
+                .title = "arithmetic end branch",
+                .userDefinedKey = fmt::format("{}", i),
+                .rules = std::unordered_set<fusion::FusionRuleStructPtr>{
+                    std::make_shared<fusion::FusionRuleStruct>(
+                        fusion::maxLength(i).chain(fusion::arithmeticEndBranch)
+                    )
+                }
+            }
+        );
+
+        runs.push_back(
+            fusion::ExperimentRun{
+                .title = "arithmetic end memory/branch",
+                .userDefinedKey = fmt::format("{}", i),
+                .rules = std::unordered_set<fusion::FusionRuleStructPtr>{
+                    std::make_shared<fusion::FusionRuleStruct>(
+                        fusion::maxLength(i).chain(fusion::arithmeticEndMemory)
+                    ),
+                    std::make_shared<fusion::FusionRuleStruct>(
+                        fusion::maxLength(i).chain(fusion::arithmeticEndBranch)
                     )
                 }
             }
