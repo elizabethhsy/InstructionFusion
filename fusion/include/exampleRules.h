@@ -19,14 +19,14 @@ using namespace std;
 // in the block are assumed to be fusable with each other.
 // TODO: check with Jon whether this assumption is valid
 
-const FusionRuleStruct FUSION_EXPORT arithmeticOnly(
+const FusionRule FUSION_EXPORT arithmeticOnly(
     [](vector<shared_ptr<Instr>> const& block, Instr const& instruction) {
         return (arithmeticInstructions.contains(instruction.instr)) ?
             FusableResult::FUSABLE : FusableResult::NOT_FUSABLE;
     }
 );
 
-const FusionRuleStruct FUSION_EXPORT arithmeticEndMemory(
+const FusionRule FUSION_EXPORT arithmeticEndMemory(
     [](vector<shared_ptr<Instr>> const& block, Instr const& instruction) {
         if (arithmeticInstructions.contains(instruction.instr)) {
             return FusableResult::FUSABLE;
@@ -38,7 +38,7 @@ const FusionRuleStruct FUSION_EXPORT arithmeticEndMemory(
     }
 );
 
-const FusionRuleStruct FUSION_EXPORT arithmeticEndBranch(
+const FusionRule FUSION_EXPORT arithmeticEndBranch(
     [](vector<shared_ptr<Instr>> const& block, Instr const& instruction) {
         if (arithmeticInstructions.contains(instruction.instr)) {
             return FusableResult::FUSABLE;
@@ -52,8 +52,8 @@ const FusionRuleStruct FUSION_EXPORT arithmeticEndBranch(
 
 // first check if the maximum length of a fusable block is exceeded, then call
 // another fusion rule
-FusionRuleStruct FUSION_EXPORT maxLength(int length) {
-    return FusionRuleStruct(
+FusionRule FUSION_EXPORT maxLength(int length) {
+    return FusionRule(
         [length](
             vector<shared_ptr<Instr>> const& block,
             Instr const& instruction
@@ -64,7 +64,7 @@ FusionRuleStruct FUSION_EXPORT maxLength(int length) {
         });
 };
 
-FusionRuleStruct FUSION_EXPORT independentInstructions(
+FusionRule FUSION_EXPORT independent(
     [](vector<shared_ptr<Instr>> const& block, Instr const& instruction)
     {
         unordered_set<Operand> operands;
@@ -77,51 +77,5 @@ FusionRuleStruct FUSION_EXPORT independentInstructions(
         return FusableResult::FUSABLE;
     }
 );
-
-// FusableResult FUSION_EXPORT maxLength(
-//     FusionRule rule,
-//     vector<shared_ptr<Instr>> const& block,
-//     Instr const& instruction,
-//     uint64_t length
-// )
-// {
-//     LOG_DEBUG(fmt::format("block size: {}", block.size()));
-//     if (block.size() >= length) return FusableResult::NOT_FUSABLE;
-//     return rule(block, instruction);
-// }
-
-// template<typename CurriedRule, typename... Args>
-// FusionRule FUSION_EXPORT curriedRule(
-//     CurriedRule rule1,
-//     FusionRule rule2,
-//     Args... args
-// )
-// {
-//     return 
-//         [rule1, rule2, ...args = std::forward<Args>(args)]
-//         (vector<shared_ptr<Instr>> const& block, Instr const& instruction)
-//             -> FusableResult
-//         {
-//             return rule1(rule2, block, instruction, args...);
-//         };
-// }
-
-// TODO: figure out curried functions properly
-// template <typename CurriedRule>
-// FusableResult FUSION_EXPORT independentInstructions(
-//     CurriedRule rule,
-//     vector<shared_ptr<Instr>> const& block,
-//     Instr const& instruction
-// )
-// {
-//     unordered_set<Operand> operands;
-//     for (auto const& instrPtr : block) {
-//         for (auto const& op : instrPtr->operands) {
-//             if (operands.contains(op)) return FusableResult::NOT_FUSABLE;
-//             operands.insert(op);
-//         }
-//     }
-//     return rule(block, instruction);
-// }
 
 }

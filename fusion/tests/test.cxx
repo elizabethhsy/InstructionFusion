@@ -31,7 +31,7 @@ TEST_CASE("test fusion", "[fusion]") {
     // once we parsed the file correctly, try to fuse it
     FusionCalculator calculator;
     SECTION("fuse with custom functions", "[fusion]") {
-        FusionRuleStruct function(
+        FusionRule function(
             [&](vector<shared_ptr<Instr>> const& block, Instr const& instruction)
                 -> FusableResult
             {
@@ -39,8 +39,8 @@ TEST_CASE("test fusion", "[fusion]") {
                     FusableResult::NOT_FUSABLE;
             });
 
-        unordered_set<FusionRuleStructPtr> functions;
-        functions.insert(make_shared<FusionRuleStruct>(function));
+        unordered_set<FusionRulePtr> functions;
+        functions.insert(make_shared<FusionRule>(function));
         ExperimentRun run{
             .title = "csc",
             .rules = functions
@@ -63,7 +63,7 @@ TEST_CASE("test fusion", "[fusion]") {
     }
 
     SECTION("limit maximum fusable length", "[fusion]") {
-        FusionRuleStruct function(
+        FusionRule function(
             [&](vector<shared_ptr<Instr>> const& block, Instr const& instruction)
                 -> FusableResult
             {
@@ -71,10 +71,10 @@ TEST_CASE("test fusion", "[fusion]") {
                     FusableResult::NOT_FUSABLE;
             });
 
-        FusionRuleStruct functionMaxLength = maxLength(2).chain(function);
+        FusionRule functionMaxLength = maxLength(2).chain(function);
 
-        unordered_set<FusionRuleStructPtr> functions;
-        functions.insert(make_shared<FusionRuleStruct>(functionMaxLength));
+        unordered_set<FusionRulePtr> functions;
+        functions.insert(make_shared<FusionRule>(functionMaxLength));
         ExperimentRun run{
             .title = "csc max length 2",
             .rules = functions
@@ -90,7 +90,7 @@ TEST_CASE("test fusion", "[fusion]") {
     }
 
     SECTION("fuse with end instructions", "[fusion]") {
-        FusionRuleStruct function(
+        FusionRule function(
             [&](vector<shared_ptr<Instr>> const& block, Instr const& instruction)
                 -> FusableResult
             {
@@ -99,8 +99,8 @@ TEST_CASE("test fusion", "[fusion]") {
                 return FusableResult::NOT_FUSABLE;
             }); // fuse the first 6 instructions
 
-        unordered_set<FusionRuleStructPtr> functions;
-        functions.insert(make_shared<FusionRuleStruct>(function));
+        unordered_set<FusionRulePtr> functions;
+        functions.insert(make_shared<FusionRule>(function));
         ExperimentRun run{
             .title = "csc + end cincoffset",
             .rules = functions
@@ -115,7 +115,7 @@ TEST_CASE("test fusion", "[fusion]") {
     }
 
     SECTION("fuse with independent instructions only", "[fusion]") {
-        FusionRuleStruct fusable(
+        FusionRule fusable(
             [&](vector<shared_ptr<Instr>> const& block, Instr const& instruction)
                 -> FusableResult
             {
@@ -124,8 +124,8 @@ TEST_CASE("test fusion", "[fusion]") {
                     ? FusableResult::FUSABLE : FusableResult::NOT_FUSABLE;
             });
         
-        unordered_set<FusionRuleStructPtr> functions1;
-        functions1.insert(make_shared<FusionRuleStruct>(fusable));
+        unordered_set<FusionRulePtr> functions1;
+        functions1.insert(make_shared<FusionRule>(fusable));
         ExperimentRun run1{
             .title = "snez/and",
             .rules = functions1
@@ -136,9 +136,9 @@ TEST_CASE("test fusion", "[fusion]") {
         );
         REQUIRE(results1.fusedInstructions == 128);
 
-        unordered_set<FusionRuleStructPtr> functions2;
-        functions2.insert(make_shared<FusionRuleStruct>(
-            independentInstructions.chain(fusable)
+        unordered_set<FusionRulePtr> functions2;
+        functions2.insert(make_shared<FusionRule>(
+            independent.chain(fusable)
         ));
         ExperimentRun run2{
             .title = "snez/and, independent",
@@ -152,7 +152,7 @@ TEST_CASE("test fusion", "[fusion]") {
     }
 
     SECTION("multiple fusion rules", "[fusion]") {
-        FusionRuleStruct cspecialrFunction(
+        FusionRule cspecialrFunction(
             [&](vector<shared_ptr<Instr>> const& block, Instr const& instruction)
                 -> FusableResult
             {
@@ -163,7 +163,7 @@ TEST_CASE("test fusion", "[fusion]") {
                 return FusableResult::NOT_FUSABLE;
             });
 
-        FusionRuleStruct cldFunction(
+        FusionRule cldFunction(
             [&](vector<shared_ptr<Instr>> const& block, Instr const& instruction)
                 -> FusableResult
             {
@@ -174,9 +174,9 @@ TEST_CASE("test fusion", "[fusion]") {
                 return FusableResult::NOT_FUSABLE;
             });
 
-        unordered_set<FusionRuleStructPtr> functions = {
-            make_shared<FusionRuleStruct>(maxLength(3).chain(cspecialrFunction)),
-            make_shared<FusionRuleStruct>(maxLength(3).chain(cldFunction))
+        unordered_set<FusionRulePtr> functions = {
+            make_shared<FusionRule>(maxLength(3).chain(cspecialrFunction)),
+            make_shared<FusionRule>(maxLength(3).chain(cldFunction))
         };
 
         ExperimentRun run{

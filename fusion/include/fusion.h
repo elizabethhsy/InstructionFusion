@@ -28,19 +28,15 @@ BOOST_DEFINE_ENUM_CLASS(
     FUSABLE // can continue expanding the fusable block
 );
 
-using FusionRule =
-    function<FusableResult(vector<shared_ptr<Instr>> const&, Instr const&)>;
-using FusionRulePtr = shared_ptr<FusionRule>;
-
 using RuleT =
     function<FusableResult(vector<shared_ptr<Instr>> const&, Instr const&)>;
 
-struct FusionRuleStruct
+struct FusionRule
 {
     RuleT rule;
 
     // Constructor accepting a custom rule
-    FusionRuleStruct(RuleT function) : rule(std::move(function)) {}
+    FusionRule(RuleT function) : rule(std::move(function)) {}
 
     FusableResult apply(
         vector<shared_ptr<Instr>> const& block,
@@ -50,9 +46,9 @@ struct FusionRuleStruct
         return rule(block, instruction);
     }
 
-    FusionRuleStruct chain(FusionRuleStruct const& nextRule) {
-        FusionRuleStruct copy = *this; // copy the struct from the stack
-        return FusionRuleStruct(
+    FusionRule chain(FusionRule const& nextRule) {
+        FusionRule copy = *this; // copy the struct from the stack
+        return FusionRule(
             [=](
                 vector<shared_ptr<Instr>> const& block,
                 Instr const& instruction) -> FusableResult
@@ -64,7 +60,7 @@ struct FusionRuleStruct
         );
     }
 };
-using FusionRuleStructPtr = shared_ptr<FusionRuleStruct>;
+using FusionRulePtr = shared_ptr<FusionRule>;
 
 struct ExperimentRun;
 struct FUSION_NO_EXPORT FusionResults
