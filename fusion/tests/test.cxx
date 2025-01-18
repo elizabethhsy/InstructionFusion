@@ -191,6 +191,30 @@ TEST_CASE("test fusion", "[fusion]") {
 
         REQUIRE(results.fusedInstructions == 112);
     }
+
+    SECTION("same count", "[fusion]") {
+        FusionRule function(
+            [&](vector<shared_ptr<Instr>> const& block, Instr const& instruction)
+                -> FusableResult
+            {
+                return (instruction.instr == "csc") ? FusableResult::FUSABLE :
+                    FusableResult::NOT_FUSABLE;
+            });
+
+        unordered_set<FusionRulePtr> functions;
+        functions.insert(make_shared<FusionRule>(sameCount.chain(function)));
+        ExperimentRun run{
+            .title = "csc",
+            .rules = functions
+        };
+
+        auto results = calculator.calculateFusion(
+            file,
+            run
+        );
+
+        REQUIRE(results.fusedInstructions == 400);
+    }
 }
 
 }

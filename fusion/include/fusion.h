@@ -46,7 +46,8 @@ struct FusionRule
         return rule(block, instruction);
     }
 
-    FusionRule chain(FusionRule const& nextRule) {
+    FusionRule chain(FusionRule const& nextRule) const
+    {
         FusionRule copy = *this; // copy the struct from the stack
         return FusionRule(
             [=](

@@ -17,7 +17,6 @@ using namespace std;
 // sequence of fusable instructions is also fusable. This means that when a
 // function receives the block and the current instruction, all the instructions
 // in the block are assumed to be fusable with each other.
-// TODO: check with Jon whether this assumption is valid
 
 const FusionRule FUSION_EXPORT arithmeticOnly(
     [](vector<shared_ptr<Instr>> const& block, Instr const& instruction) {
@@ -72,6 +71,19 @@ FusionRule FUSION_EXPORT independent(
             for (auto const& op : instrPtr->operands) {
                 if (operands.contains(op)) return FusableResult::NOT_FUSABLE;
                 operands.insert(op);
+            }
+        }
+        return FusableResult::FUSABLE;
+    }
+);
+
+FusionRule FUSION_EXPORT sameCount(
+    [](vector<shared_ptr<Instr>> const& block, Instr const& instruction)
+    {
+        if (block.size() > 0) {
+            auto const& lastInstr = block.back();
+            if (lastInstr->count != instruction.count) {
+                return FusableResult::NOT_FUSABLE;
             }
         }
         return FusableResult::FUSABLE;
