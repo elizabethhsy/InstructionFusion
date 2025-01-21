@@ -24,6 +24,7 @@ BOOST_DEFINE_ENUM_CLASS(
     FusableResult,
     ERROR, // should not be output
     NOT_FUSABLE, // end the fusable block before current instruction
+    START_OF_FUSABLE, // start the fusable block with the current instruction
     END_OF_FUSABLE, // end the fusable block after the current instruction
     FUSABLE // can continue expanding the fusable block
 );

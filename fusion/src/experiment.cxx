@@ -78,7 +78,7 @@ ExperimentResults Experiment::run()
             .run = run
         };
 
-        LOG_INFO(run.title);
+        LOG_INFO(fmt::format("{} ({})", run.title, run.userDefinedKey));
         for (auto const& file : files) {
             FusionResults result = calculator.calculateFusion(
                 *file,

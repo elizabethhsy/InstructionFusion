@@ -86,6 +86,7 @@ FusionResults FusionCalculator::calculateFusion(
     // all the functions that are still in contention.
     for (auto const& instruction : file.instructions) {
         bool endOfFusable = false;
+        bool startOfFusable = false;
 
         // if we're starting a new critical section, then reset the round
         if (instruction.count != dynamicCount) {
@@ -95,12 +96,12 @@ FusionResults FusionCalculator::calculateFusion(
 
         for (auto fun : rules) {
             auto result = fun->apply(currBlock, instruction);
-            LOG_DEBUG(
-                fmt::format(
-                    "FusableResult type of {}",
-                    boost::describe::enum_to_string(result, "unknown")
-                )
-            );
+            // LOG_DEBUG(
+            //     fmt::format(
+            //         "FusableResult type of {}",
+            //         boost::describe::enum_to_string(result, "unknown")
+            //     )
+            // );
             switch (result) {
                 case FusableResult::FUSABLE:
                 {
@@ -111,6 +112,12 @@ FusionResults FusionCalculator::calculateFusion(
                 {
                     // remove the function from the set, but also set a flag
                     endOfFusable = true;
+                    tempRules.erase(fun);
+                    break;
+                }
+                case FusableResult::START_OF_FUSABLE:
+                {
+                    startOfFusable = true;
                     tempRules.erase(fun);
                     break;
                 }
@@ -141,7 +148,11 @@ FusionResults FusionCalculator::calculateFusion(
             if (endOfFusable) {
                 currBlock.push_back(make_shared<Instr>(instruction));
                 new_round(dynamicCount);
-            } else {
+            } else if (startOfFusable) {
+                new_round(dynamicCount);
+                currBlock.push_back(make_shared<Instr>(instruction));
+                dynamicCount = instruction.count;
+            } else { // NOT_FUSABLE
                 new_round(dynamicCount);
                 dynamicCount = instruction.count;
                 currBlock.push_back(make_shared<Instr>(instruction));

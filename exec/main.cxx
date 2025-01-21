@@ -1,4 +1,5 @@
 #include "instructions.h"
+#include "rules.h"
 
 #include <csvHandler.h>
 #include <exampleRules.h>
@@ -28,7 +29,7 @@ int main(int argc, char const *argv[])
 
     const auto now = std::chrono::system_clock::now();
     std::string dirPath =
-            "/Users/elizabeth/Desktop/Cambridge/Dissertation/cleaned data";
+            "/Users/elizabeth/Desktop/Cambridge/Dissertation/cleaned_data";
     std::string resultsPath =
         fmt::format(
             "/Users/elizabeth/Desktop/Cambridge/Dissertation/data results/{}",
@@ -39,225 +40,184 @@ int main(int argc, char const *argv[])
         name = fmt::format("{}/{}.csv", dirPath, name);
     }
 
-    std::vector<fusion::ExperimentRun> runs = {
+    // std::vector<fusion::ExperimentRun> baseRuns = {
+    //     fusion::ExperimentRun{
+    //         .title = "arithmetic only",
+    //         .userDefinedKey = "0",
+    //         .rules = std::unordered_set<fusion::FusionRulePtr>{
+    //             std::make_shared<fusion::FusionRule>(
+    //                 fusion::arithmeticOnly.chain(fusion::sameCount)
+    //             )
+    //         }
+    //     },
+    //     fusion::ExperimentRun{
+    //         .title = "arithmetic end memory",
+    //         .userDefinedKey = "0",
+    //         .rules = std::unordered_set<fusion::FusionRulePtr>{
+    //             std::make_shared<fusion::FusionRule>(
+    //                 fusion::sameCount.chain(fusion::arithmeticEndMemory)
+    //             )
+    //         }
+    //     },
+    //     fusion::ExperimentRun{
+    //         .title = "arithmetic end branch",
+    //         .userDefinedKey = "0",
+    //         .rules = std::unordered_set<fusion::FusionRulePtr>{
+    //             std::make_shared<fusion::FusionRule>(
+    //                 fusion::sameCount.chain(fusion::arithmeticEndBranch)
+    //             )
+    //         }
+    //     },
+    //     fusion::ExperimentRun{
+    //         .title = "arithmetic end memory/branch",
+    //         .userDefinedKey = "0",
+    //         .rules = std::unordered_set<fusion::FusionRulePtr>{
+    //             std::make_shared<fusion::FusionRule>(
+    //                 fusion::sameCount.chain(fusion::arithmeticEndMemory)
+    //             ),
+    //             std::make_shared<fusion::FusionRule>(
+    //                 fusion::sameCount.chain(fusion::arithmeticEndBranch)
+    //             )
+    //         }
+    //     },
+    //     fusion::ExperimentRun{
+    //         .title = "arithmetic only (I)",
+    //         .userDefinedKey = "0",
+    //         .rules = std::unordered_set<fusion::FusionRulePtr>{
+    //             std::make_shared<fusion::FusionRule>(
+    //                 fusion::independent
+    //                     .chain(fusion::sameCount)
+    //                     .chain(fusion::arithmeticOnly)
+    //             )
+    //         }
+    //     },
+    //     fusion::ExperimentRun{
+    //         .title = "arithmetic end memory (I)",
+    //         .userDefinedKey = "0",
+    //         .rules = std::unordered_set<fusion::FusionRulePtr>{
+    //             std::make_shared<fusion::FusionRule>(
+    //                 fusion::independent
+    //                     .chain(fusion::sameCount)
+    //                     .chain(fusion::arithmeticEndMemory)
+    //             )
+    //         }
+    //     },
+    //     fusion::ExperimentRun{
+    //         .title = "arithmetic end branch (I)",
+    //         .userDefinedKey = "0",
+    //         .rules = std::unordered_set<fusion::FusionRulePtr>{
+    //             std::make_shared<fusion::FusionRule>(
+    //                 fusion::independent
+    //                     .chain(fusion::sameCount)
+    //                     .chain(fusion::arithmeticEndBranch)
+    //             )
+    //         }
+    //     },
+    //     fusion::ExperimentRun{
+    //         .title = "arithmetic end memory/branch (I)",
+    //         .userDefinedKey = "0",
+    //         .rules = std::unordered_set<fusion::FusionRulePtr>{
+    //             std::make_shared<fusion::FusionRule>(
+    //                 fusion::independent
+    //                     .chain(fusion::sameCount)
+    //                     .chain(fusion::arithmeticEndMemory)
+    //             ),
+    //             std::make_shared<fusion::FusionRule>(
+    //                 fusion::independent
+    //                     .chain(fusion::sameCount)
+    //                     .chain(fusion::arithmeticEndBranch)
+    //             )
+    //         }
+    //     }
+    // };
+
+    std::vector<fusion::ExperimentRun> baseRuns = {
         fusion::ExperimentRun{
-            .title = "arithmetic only",
+            .title = "load effective address",
             .userDefinedKey = "0",
             .rules = std::unordered_set<fusion::FusionRulePtr>{
                 std::make_shared<fusion::FusionRule>(
-                    fusion::arithmeticOnly.chain(fusion::sameCount)
+                    fusion::sameCount.chain(loadEffectiveAddress)
                 )
             }
         },
         fusion::ExperimentRun{
-            .title = "arithmetic end memory",
+            .title = "indexed load",
             .userDefinedKey = "0",
             .rules = std::unordered_set<fusion::FusionRulePtr>{
                 std::make_shared<fusion::FusionRule>(
-                    fusion::sameCount.chain(fusion::arithmeticEndMemory)
+                    fusion::sameCount.chain(indexedLoad)
                 )
             }
         },
+        // fusion::ExperimentRun{
+        //     .title = "fused indexed load",
+        //     .userDefinedKey = "0",
+        //     .rules = std::unordered_set<fusion::FusionRulePtr>{
+        //         std::make_shared<fusion::FusionRule>(
+        //             fusion::sameCount.chain(fusedIndexedLoad)
+        //         )
+        //     }
+        // },
         fusion::ExperimentRun{
-            .title = "arithmetic end branch",
+            .title = "clear upper word",
             .userDefinedKey = "0",
             .rules = std::unordered_set<fusion::FusionRulePtr>{
                 std::make_shared<fusion::FusionRule>(
-                    fusion::sameCount.chain(fusion::arithmeticEndBranch)
+                    fusion::sameCount.chain(clearUpperWord)
                 )
             }
         },
+        // fusion::ExperimentRun{
+        //     .title = "load global",
+        //     .userDefinedKey = "0",
+        //     .rules = std::unordered_set<fusion::FusionRulePtr>{
+        //         std::make_shared<fusion::FusionRule>(
+        //             fusion::sameCount.chain(loadGlobal)
+        //         )
+        //     }
+        // },
         fusion::ExperimentRun{
-            .title = "arithmetic end memory/branch",
+            .title = "overall results",
             .userDefinedKey = "0",
             .rules = std::unordered_set<fusion::FusionRulePtr>{
                 std::make_shared<fusion::FusionRule>(
-                    fusion::sameCount.chain(fusion::arithmeticEndMemory)
+                    fusion::sameCount.chain(loadEffectiveAddress)
                 ),
                 std::make_shared<fusion::FusionRule>(
-                    fusion::sameCount.chain(fusion::arithmeticEndBranch)
-                )
-            }
-        },
-        fusion::ExperimentRun{
-            .title = "arithmetic only (I)",
-            .userDefinedKey = "0",
-            .rules = std::unordered_set<fusion::FusionRulePtr>{
-                std::make_shared<fusion::FusionRule>(
-                    fusion::independent
-                        .chain(fusion::sameCount)
-                        .chain(fusion::arithmeticOnly)
-                )
-            }
-        },
-        fusion::ExperimentRun{
-            .title = "arithmetic end memory (I)",
-            .userDefinedKey = "0",
-            .rules = std::unordered_set<fusion::FusionRulePtr>{
-                std::make_shared<fusion::FusionRule>(
-                    fusion::independent
-                        .chain(fusion::sameCount)
-                        .chain(fusion::arithmeticEndMemory)
-                )
-            }
-        },
-        fusion::ExperimentRun{
-            .title = "arithmetic end branch (I)",
-            .userDefinedKey = "0",
-            .rules = std::unordered_set<fusion::FusionRulePtr>{
-                std::make_shared<fusion::FusionRule>(
-                    fusion::independent
-                        .chain(fusion::sameCount)
-                        .chain(fusion::arithmeticEndBranch)
-                )
-            }
-        },
-        fusion::ExperimentRun{
-            .title = "arithmetic end memory/branch (I)",
-            .userDefinedKey = "0",
-            .rules = std::unordered_set<fusion::FusionRulePtr>{
-                std::make_shared<fusion::FusionRule>(
-                    fusion::independent
-                        .chain(fusion::sameCount)
-                        .chain(fusion::arithmeticEndMemory)
+                    fusion::sameCount.chain(indexedLoad)
                 ),
+                // std::make_shared<fusion::FusionRule>(
+                //     fusion::sameCount.chain(fusedIndexedLoad)
+                // ),
                 std::make_shared<fusion::FusionRule>(
-                    fusion::independent
-                        .chain(fusion::sameCount)
-                        .chain(fusion::arithmeticEndBranch)
-                )
+                    fusion::sameCount.chain(clearUpperWord)
+                ),
+                // std::make_shared<fusion::FusionRule>(
+                //     fusion::sameCount.chain(loadGlobal)
+                // )
             }
         }
     };
 
+    std::vector<fusion::ExperimentRun> runs = baseRuns;
     for (int i = 1; i <= 10; i++) {
-        runs.push_back(
-            fusion::ExperimentRun{
-                .title = "arithmetic only",
-                .userDefinedKey = fmt::format("{}", i),
-                .rules = std::unordered_set<fusion::FusionRulePtr>{
-                    std::make_shared<fusion::FusionRule>(
-                        fusion::maxLength(i)
-                            .chain(fusion::sameCount)
-                            .chain(fusion::arithmeticOnly)
-                    )
-                }
+        for (auto const& run : baseRuns) {
+            std::unordered_set<fusion::FusionRulePtr> rules;
+            for (auto rule : run.rules) {
+                rules.insert(std::make_shared<fusion::FusionRule>(
+                    fusion::maxLength(i).chain(*rule)
+                ));
             }
-        );
 
-        runs.push_back(
-            fusion::ExperimentRun{
-                .title = "arithmetic end memory",
-                .userDefinedKey = fmt::format("{}", i),
-                .rules = std::unordered_set<fusion::FusionRulePtr>{
-                    std::make_shared<fusion::FusionRule>(
-                        fusion::maxLength(i)
-                            .chain(fusion::sameCount)
-                            .chain(fusion::arithmeticEndMemory)
-                    )
+            runs.push_back(
+                fusion::ExperimentRun{
+                    .title = run.title,
+                    .userDefinedKey = fmt::format("{}", i),
+                    .rules = rules
                 }
-            }
-        );
-
-        runs.push_back(
-            fusion::ExperimentRun{
-                .title = "arithmetic end branch",
-                .userDefinedKey = fmt::format("{}", i),
-                .rules = std::unordered_set<fusion::FusionRulePtr>{
-                    std::make_shared<fusion::FusionRule>(
-                        fusion::maxLength(i)
-                            .chain(fusion::sameCount)
-                            .chain(fusion::arithmeticEndBranch)
-                    )
-                }
-            }
-        );
-
-        runs.push_back(
-            fusion::ExperimentRun{
-                .title = "arithmetic end memory/branch",
-                .userDefinedKey = fmt::format("{}", i),
-                .rules = std::unordered_set<fusion::FusionRulePtr>{
-                    std::make_shared<fusion::FusionRule>(
-                        fusion::maxLength(i)
-                            .chain(fusion::sameCount)
-                            .chain(fusion::arithmeticEndMemory)
-                    ),
-                    std::make_shared<fusion::FusionRule>(
-                        fusion::maxLength(i)
-                            .chain(fusion::sameCount)
-                            .chain(fusion::arithmeticEndBranch)
-                    )
-                }
-            }
-        );
-
-        runs.push_back(
-            fusion::ExperimentRun{
-                .title = "arithmetic only (I)",
-                .userDefinedKey = fmt::format("{}", i),
-                .rules = std::unordered_set<fusion::FusionRulePtr>{
-                    std::make_shared<fusion::FusionRule>(
-                        fusion::independent
-                            .chain(fusion::maxLength(i))
-                            .chain(fusion::sameCount)
-                            .chain(fusion::arithmeticOnly)
-                        
-                    )
-                }
-            }
-        );
-
-        runs.push_back(
-            fusion::ExperimentRun{
-                .title = "arithmetic end memory (I)",
-                .userDefinedKey = fmt::format("{}", i),
-                .rules = std::unordered_set<fusion::FusionRulePtr>{
-                    std::make_shared<fusion::FusionRule>(
-                        fusion::independent
-                            .chain(fusion::maxLength(i))
-                            .chain(fusion::sameCount)
-                            .chain(fusion::arithmeticEndMemory)
-                    )
-                }
-            }
-        );
-
-        runs.push_back(
-            fusion::ExperimentRun{
-                .title = "arithmetic end branch (I)",
-                .userDefinedKey = fmt::format("{}", i),
-                .rules = std::unordered_set<fusion::FusionRulePtr>{
-                    std::make_shared<fusion::FusionRule>(
-                        fusion::independent
-                            .chain(fusion::maxLength(i))
-                            .chain(fusion::sameCount)
-                            .chain(fusion::arithmeticEndBranch)
-                    )
-                }
-            }
-        );
-
-        runs.push_back(
-            fusion::ExperimentRun{
-                .title = "arithmetic end memory/branch (I)",
-                .userDefinedKey = fmt::format("{}", i),
-                .rules = std::unordered_set<fusion::FusionRulePtr>{
-                    std::make_shared<fusion::FusionRule>(
-                        fusion::independent
-                            .chain(fusion::maxLength(i))
-                            .chain(fusion::sameCount)
-                            .chain(fusion::arithmeticEndMemory)
-                    ),
-                    std::make_shared<fusion::FusionRule>(
-                        fusion::independent
-                            .chain(fusion::maxLength(i))
-                            .chain(fusion::sameCount)
-                            .chain(fusion::arithmeticEndBranch)
-                    )
-                }
-            }
-        );
+            );
+        }
     }
 
     fusion::Experiment experiment(fileNames, runs);

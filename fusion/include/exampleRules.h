@@ -1,3 +1,5 @@
+#pragma once
+
 #include "fusion.h"
 #include "instructions.h"
 

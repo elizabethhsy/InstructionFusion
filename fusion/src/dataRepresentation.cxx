@@ -59,6 +59,7 @@ Instr Instr::parseInstruction(string const& str)
 
     stringstream operands(tokens[3]);
     while (getline(operands, cell, ' ')) {
+        if (cell == "") continue;
         instr.operands.push_back(Operand{cell});
     }
 
