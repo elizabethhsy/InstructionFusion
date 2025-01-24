@@ -1,0 +1,28 @@
+DEFINE arithmetic   =   "add"       OR
+                        "addi"      OR
+                        "sub"
+END_DEFINE
+
+DEFINE memory       =   "ldw"       OR
+                        "ld"
+END_DEFINE
+
+DEFINE branch       =   "beq"       OR
+                        "bne"
+END_DEFINE
+
+DEFINE operand_any
+    ((_,)*_)
+END_DEFINE
+
+DEFINE operand_independent
+
+END_DEFINE
+
+RULE (arithmetic)*("" OR memory OR branch)
+END_RULE
+
+output:
+(add[*,*]|addi[*,*]|sub[*,*])*  |
+(add[*,*]|addi[*,*]|sub[*,*])*(ldw[*,*]|ld[*,*]) |
+(add[*,*]|addi[*,*]|sub[*,*])*(beq[*,*]|bne[*,*])
