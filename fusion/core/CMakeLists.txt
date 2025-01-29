@@ -34,6 +34,6 @@ generate_export_header(${PROJECT_NAME}
 
 find_package(fmt REQUIRED)
 find_package(Boost REQUIRED COMPONENTS filesystem)
-target_link_libraries(${PROJECT_NAME} PRIVATE
-    fmt::fmt ${Boost_LIBRARIES}
+target_link_libraries(${PROJECT_NAME} PUBLIC
+    fmt::fmt ${Boost_LIBRARIES} common
 )

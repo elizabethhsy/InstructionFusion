@@ -4,6 +4,7 @@ project(fusion VERSION 1.0.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+add_subdirectory(common)
 add_subdirectory(core)
 add_subdirectory(simulation)
 
@@ -23,7 +24,7 @@ write_basic_package_version_file(
     COMPATIBILITY SameMajorVersion
 )
 
-install(TARGETS core simulation
+install(TARGETS common core simulation
     EXPORT fusionTargets
     LIBRARY
             COMPONENT fusion-lib

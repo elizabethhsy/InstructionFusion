@@ -1,7 +1,10 @@
 #pragma once
 
-#include "fusion.h"
-#include "instructions.h"
+#include <fusion_core_export.h>
+
+#include <dataRepresentation.h>
+#include <fusion.h>
+#include <instructions.h>
 
 #include <utility>
 

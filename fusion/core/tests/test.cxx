@@ -1,3 +1,6 @@
+#include "fusionCalculator.h"
+#include "instructionCount.h"
+
 #include <dataRepresentation.h>
 #include <exampleRules.h>
 #include <experiment.h>
@@ -16,11 +19,12 @@ using namespace std;
 
 TEST_CASE("test fusion", "[fusion]") {
     string path = "/Users/elizabeth/Desktop/Cambridge/Dissertation/"
-        "fusion/core/tests/test_data.csv";
+        "fusion/core/tests/data.csv";
     File file(path);
     Instr first = {
         .addr = 0xfc830,
         .count = 100,
+        .label = "BB_0",
         .instr = "csc",
         .operands = {Operand{"cs6"}, Operand{"64(csp)"}}
     };
