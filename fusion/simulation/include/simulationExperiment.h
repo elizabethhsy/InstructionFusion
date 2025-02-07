@@ -12,13 +12,19 @@ namespace fusion
 {
 
 using namespace std;
+
+struct SimulationResults
+{
+
+};
     
 struct SimulationExperiment
 {
     SimulationExperiment(shared_ptr<ExperimentManager> manager)
         : manager(manager) {};
 
-    void run();
+    SimulationResults run();
+    static void save(SimulationResults const& results, string resultsPath);
 private:
     shared_ptr<ExperimentManager> manager;
     unordered_map<shared_ptr<File>, vector<ControlFlowPath>> instructionStreams;

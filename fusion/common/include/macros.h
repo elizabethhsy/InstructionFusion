@@ -9,4 +9,4 @@
 #define LOG_ERROR(msg) std::cerr << msg << std::endl
 #define LOG_DEBUG(msg) if (DEBUG) std::cout << msg << std::endl
 
-#define uint unsigned int
+// #define uint unsigned int

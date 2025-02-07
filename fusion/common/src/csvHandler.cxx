@@ -12,18 +12,22 @@ namespace fusion
 
 using namespace std;
 
-CSVWriter::CSVWriter(string fullPath) : stream(fullPath)
+CSVWriter::CSVWriter(string fullPath)
 {
     // create the directory if necessary
-    boost::filesystem::path dir(fullPath);
-    if(!(boost::filesystem::exists(dir))){
-        if (!boost::filesystem::create_directory(dir)) {
-            LOG_ERROR("failed to create directory {}");
+    boost::filesystem::path filePath(fullPath);
+    auto dirPath = filePath.parent_path();
+    if(!(boost::filesystem::exists(dirPath))){
+        if (!boost::filesystem::create_directories(dirPath)) {
+            LOG_ERROR(
+                fmt::format("failed to create directory {}", dirPath.string())
+            );
             return;
         }
     }
 
     // create the file if necessary
+    stream.open(fullPath);
     if (!stream.is_open()) {
         LOG_ERROR(
             fmt::format(
@@ -38,6 +42,8 @@ void CSVWriter::writeLine(string data)
 {
     stream << data << "\n";
 }
+
+// TODO: close stream on destructor
 
 vector<Instr> CSVManager::loadInstructions(string fullPath)
 {

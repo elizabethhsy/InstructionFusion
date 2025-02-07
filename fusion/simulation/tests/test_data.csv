@@ -1,0 +1,5 @@
+addr,count,label,instruction,operands
+0x0000,20,main,addi,t0 zero 5
+0x0004,20,,beq,b1 zero 5
+0x0008,10,b0,addi,t0 zero 5
+0x000C,20,b1,addi,t0 zero 5

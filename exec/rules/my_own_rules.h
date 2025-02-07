@@ -2,8 +2,10 @@
 
 #include <exampleRules.h>
 #include <experiment.h>
+#include <instructions.h>
 #include <fusion.h>
 
+#include <cstdlib>
 #include <fmt/core.h>
 #include <string>
 #include <unordered_set>
@@ -12,93 +14,164 @@
 namespace my_rules
 {
 
-std::vector<fusion::ExperimentRun> baseRuns = {
-    fusion::ExperimentRun{
-        .title = "arithmetic only",
-        .userDefinedKey = "0",
-        .rules = std::unordered_set<fusion::FusionRulePtr>{
-            std::make_shared<fusion::FusionRule>(
-                fusion::sameCount.chain(fusion::arithmeticOnly)
-            )
+using namespace fusion;
+using namespace std;
+
+const FusionRule alwaysFusable(
+    [](vector<shared_ptr<Instr>> const& block, Instr const& instruction) {
+        return FusableResult::FUSABLE;
+    }
+);
+
+// enables fusion across branches etc.
+const FusionRule similarCount(float proportion)
+{
+    return FusionRule(
+        [proportion](vector<shared_ptr<Instr>> const& block, Instr const& instruction) {
+            if (block.size() > 0) {
+                auto const& lastInstr = block.back();
+                auto blockCount = lastInstr->count;
+                auto instrCount = instruction.count;
+                if (abs(float(blockCount)-instrCount)/max(blockCount, instrCount)
+                    > proportion)
+                {
+                    return FusableResult::NOT_FUSABLE;
+                }
+            }
+            return FusableResult::FUSABLE;
         }
-    },
-    fusion::ExperimentRun{
-        .title = "arithmetic end memory",
-        .userDefinedKey = "0",
-        .rules = std::unordered_set<fusion::FusionRulePtr>{
-            std::make_shared<fusion::FusionRule>(
-                fusion::sameCount.chain(fusion::arithmeticEndMemory)
-            )
+    );
+}
+
+// allow fusion across branches as well. If the branch instruction doesn't
+// affect the count, then ignore it and return fusable. If it does, then
+// fuse as normal.
+const FusionRule acrossBranches(
+    [](vector<shared_ptr<Instr>> const& block, Instr const& instruction)
+        -> FusableResult
+    {
+        if (branchInstructions.contains(instruction.instr)) {
+            return FusableResult::FUSABLE;
         }
-    },
-    fusion::ExperimentRun{
-        .title = "arithmetic end branch",
+        return arithmeticEndMemory.apply(block, instruction);
+    }
+);
+
+vector<ExperimentRun> baseRuns = {
+    // ExperimentRun{
+    //     .title = "arithmetic only",
+    //     .userDefinedKey = "0",
+    //     .rules = unordered_set<FusionRulePtr>{
+    //         make_shared<FusionRule>(
+    //             sameCount.chain(arithmeticOnly)
+    //         )
+    //     }
+    // },
+    // ExperimentRun{
+    //     .title = "arithmetic end memory",
+    //     .userDefinedKey = "0",
+    //     .rules = unordered_set<FusionRulePtr>{
+    //         make_shared<FusionRule>(
+    //             sameCount.chain(arithmeticEndMemory)
+    //         )
+    //     }
+    // },
+    // ExperimentRun{
+    //     .title = "arithmetic end branch",
+    //     .userDefinedKey = "0",
+    //     .rules = unordered_set<FusionRulePtr>{
+    //         make_shared<FusionRule>(
+    //             sameCount.chain(arithmeticEndBranch)
+    //         )
+    //     }
+    // },
+    // ExperimentRun{
+    //     .title = "arithmetic end memory/branch",
+    //     .userDefinedKey = "0",
+    //     .rules = unordered_set<FusionRulePtr>{
+    //         make_shared<FusionRule>(
+    //             sameCount.chain(arithmeticEndMemory)
+    //         ),
+    //         make_shared<FusionRule>(
+    //             sameCount.chain(arithmeticEndBranch)
+    //         )
+    //     }
+    // },
+    // ExperimentRun{
+    //     .title = "arithmetic only (I)",
+    //     .userDefinedKey = "0",
+    //     .rules = unordered_set<FusionRulePtr>{
+    //         make_shared<FusionRule>(
+    //             independent
+    //                 .chain(sameCount)
+    //                 .chain(arithmeticOnly)
+    //         )
+    //     }
+    // },
+    // ExperimentRun{
+    //     .title = "arithmetic end memory (I)",
+    //     .userDefinedKey = "0",
+    //     .rules = unordered_set<FusionRulePtr>{
+    //         make_shared<FusionRule>(
+    //             independent
+    //                 .chain(sameCount)
+    //                 .chain(arithmeticEndMemory)
+    //         )
+    //     }
+    // },
+    // ExperimentRun{
+    //     .title = "arithmetic end branch (I)",
+    //     .userDefinedKey = "0",
+    //     .rules = unordered_set<FusionRulePtr>{
+    //         make_shared<FusionRule>(
+    //             independent
+    //                 .chain(sameCount)
+    //                 .chain(arithmeticEndBranch)
+    //         )
+    //     }
+    // },
+    // ExperimentRun{
+    //     .title = "arithmetic end memory/branch (I)",
+    //     .userDefinedKey = "0",
+    //     .rules = unordered_set<FusionRulePtr>{
+    //         make_shared<FusionRule>(
+    //             independent
+    //                 .chain(sameCount)
+    //                 .chain(arithmeticEndMemory)
+    //         ),
+    //         make_shared<FusionRule>(
+    //             independent
+    //                 .chain(sameCount)
+    //                 .chain(arithmeticEndBranch)
+    //         )
+    //     }
+    // },
+    // ExperimentRun{
+    //     .title = "fuse across branches",
+    //     .userDefinedKey = "0",
+    //     .rules = unordered_set<FusionRulePtr>{
+    //         make_shared<FusionRule>(acrossBranches)
+    //     }
+    // },
+    // ExperimentRun{
+    //     .title = "same count",
+    //     .userDefinedKey = "0",
+    //     .rules = unordered_set<FusionRulePtr>{
+    //         make_shared<FusionRule>(sameCount)
+    //     }
+    // },
+    // ExperimentRun{
+    //     .title = "similar count",
+    //     .userDefinedKey = "0",
+    //     .rules = unordered_set<FusionRulePtr>{
+    //         make_shared<FusionRule>(similarCount(1))
+    //     }
+    // },
+    ExperimentRun{
+        .title = "always fusable",
         .userDefinedKey = "0",
-        .rules = std::unordered_set<fusion::FusionRulePtr>{
-            std::make_shared<fusion::FusionRule>(
-                fusion::sameCount.chain(fusion::arithmeticEndBranch)
-            )
-        }
-    },
-    fusion::ExperimentRun{
-        .title = "arithmetic end memory/branch",
-        .userDefinedKey = "0",
-        .rules = std::unordered_set<fusion::FusionRulePtr>{
-            std::make_shared<fusion::FusionRule>(
-                fusion::sameCount.chain(fusion::arithmeticEndMemory)
-            ),
-            std::make_shared<fusion::FusionRule>(
-                fusion::sameCount.chain(fusion::arithmeticEndBranch)
-            )
-        }
-    },
-    fusion::ExperimentRun{
-        .title = "arithmetic only (I)",
-        .userDefinedKey = "0",
-        .rules = std::unordered_set<fusion::FusionRulePtr>{
-            std::make_shared<fusion::FusionRule>(
-                fusion::independent
-                    .chain(fusion::sameCount)
-                    .chain(fusion::arithmeticOnly)
-            )
-        }
-    },
-    fusion::ExperimentRun{
-        .title = "arithmetic end memory (I)",
-        .userDefinedKey = "0",
-        .rules = std::unordered_set<fusion::FusionRulePtr>{
-            std::make_shared<fusion::FusionRule>(
-                fusion::independent
-                    .chain(fusion::sameCount)
-                    .chain(fusion::arithmeticEndMemory)
-            )
-        }
-    },
-    fusion::ExperimentRun{
-        .title = "arithmetic end branch (I)",
-        .userDefinedKey = "0",
-        .rules = std::unordered_set<fusion::FusionRulePtr>{
-            std::make_shared<fusion::FusionRule>(
-                fusion::independent
-                    .chain(fusion::sameCount)
-                    .chain(fusion::arithmeticEndBranch)
-            )
-        }
-    },
-    fusion::ExperimentRun{
-        .title = "arithmetic end memory/branch (I)",
-        .userDefinedKey = "0",
-        .rules = std::unordered_set<fusion::FusionRulePtr>{
-            std::make_shared<fusion::FusionRule>(
-                fusion::independent
-                    .chain(fusion::sameCount)
-                    .chain(fusion::arithmeticEndMemory)
-            ),
-            std::make_shared<fusion::FusionRule>(
-                fusion::independent
-                    .chain(fusion::sameCount)
-                    .chain(fusion::arithmeticEndBranch)
-            )
+        .rules = unordered_set<FusionRulePtr>{
+            make_shared<FusionRule>(alwaysFusable)
         }
     }
 };

@@ -60,17 +60,18 @@ FusionResults FusionCalculator::calculateFusion(
 
     vector<shared_ptr<Instr>> currBlock;
     auto const& rules = run.rules;
-    uint64_t dynamicCount = 0;
+    uint64_t dynamicCount = file.instructions[0].count;
     auto tempRules = rules;
 
     // keep track of results
     uint64_t instructionsAfterFuse = 0;
     vector<pair<uint64_t, uint64_t>> fusionLengths;
+    bool startOfBlock = true;
 
     // record the results, and start a new round
     auto new_round = [&](uint64_t count) {
         if (currBlock.size() == 0) return;
-        
+
         // record the results
         instructionsAfterFuse += count;
         fusionLengths.push_back(make_pair(count, currBlock.size()));
@@ -78,6 +79,7 @@ FusionResults FusionCalculator::calculateFusion(
         // reset the tracking variables
         currBlock.clear();
         tempRules = rules;
+        startOfBlock = true;
     };
 
     // iterate through every instruction. For each instruction, we iterate over
@@ -86,10 +88,9 @@ FusionResults FusionCalculator::calculateFusion(
         bool endOfFusable = false;
         bool startOfFusable = false;
 
-        // if we're starting a new critical section, then reset the round
-        if (instruction.count != dynamicCount) {
-            new_round(dynamicCount);
+        if (startOfBlock) {
             dynamicCount = instruction.count;
+            startOfBlock = false;
         }
 
         for (auto fun : rules) {
@@ -157,6 +158,7 @@ FusionResults FusionCalculator::calculateFusion(
                 new_round(dynamicCount);
             }
         } else {
+            dynamicCount = max(dynamicCount, instruction.count);
             currBlock.push_back(make_shared<Instr>(instruction));
         }
     }
@@ -164,6 +166,7 @@ FusionResults FusionCalculator::calculateFusion(
 
     // calculate stats
     auto totalInstructions = file.stats->totalInstructionNum;
+    assert(totalInstructions >= instructionsAfterFuse);
     auto fusedInstructions = totalInstructions - instructionsAfterFuse;
     auto fusedPercentage = 100*(fusedInstructions)/double(totalInstructions);
 

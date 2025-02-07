@@ -84,7 +84,8 @@
         "queue": "cpp",
         "__tree": "cpp",
         "set": "cpp",
-        "span": "cpp"
+        "span": "cpp",
+        "map": "cpp"
     },
     "cmake.compiler": {
         "C": "/usr/bin/clang",

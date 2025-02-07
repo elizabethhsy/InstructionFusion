@@ -44,8 +44,8 @@ struct Instr
     }
 
     bool operator==(Instr const& other) const {
-        bool operands_equal = true;
-        for (int i = 0; i < operands.size(); i++) {
+        bool operands_equal = operands.size() == other.operands.size();
+        for (int i = 0; i < min(operands.size(), other.operands.size()); i++) {
             operands_equal &= (operands[i] == other.operands[i]);
         }
         return addr == other.addr && count == other.count &&
@@ -53,6 +53,21 @@ struct Instr
     }
 };
 ostream& operator<<(ostream& os, Instr const& instr);
+
+struct InstrBlock
+{
+    string label = "";
+    uint32_t addr; // starting address
+    uint64_t count;
+    vector<shared_ptr<Instr>> instructions;
+
+    string toString(string name) const;
+};
+
+struct FusedBlock : InstrBlock
+{
+    string toString() const;
+};
 
 struct CriticalSection
 {

@@ -19,13 +19,8 @@ namespace fusion
 
 using namespace std;
 
-struct BasicBlock
+struct BasicBlock : InstrBlock
 {
-    string label = "";
-    uint32_t addr; // starting address
-    uint64_t count;
-    vector<shared_ptr<Instr>> instructions;
-
     string toString() const;
     static bool sameBasicBlock(Instr const& prev, Instr const& next);
 };
@@ -40,19 +35,52 @@ struct ControlFlowPath
 
 struct ControlFlowGraph
 {
-    vector<BasicBlock> basicBlocks;
+    vector<shared_ptr<BasicBlock>> basicBlocks;
     unordered_map<uint32_t, shared_ptr<BasicBlock>> addr_map;
     unordered_map<string, shared_ptr<BasicBlock>> label_map;
 
-    // prev BasicBlock --> next BasicBlock
-    unordered_map<shared_ptr<BasicBlock>, vector<shared_ptr<BasicBlock>>> adj_list;
-    unordered_map<shared_ptr<BasicBlock>, vector<shared_ptr<BasicBlock>>> rev_adj_list;
+    // prev BasicBlock -edge count-> next BasicBlock
+    unordered_map<
+        shared_ptr<BasicBlock>,
+        unordered_set<shared_ptr<BasicBlock>>
+    > adjList;
+
+    // next BasicBlock -edge count-> prev BasicBlock
+    unordered_map<
+        shared_ptr<BasicBlock>,
+        unordered_set<shared_ptr<BasicBlock>>
+    > revAdjList;
 
     // constructs the control flow graph from the instructions
     ControlFlowGraph(File const& file);
     vector<ControlFlowPath> computePaths();
 private:
     void constructBasicBlocks(File const& file);
+    void constructDependencies();
+    void findEdges();
+};
+
+struct Edge
+{
+    shared_ptr<BasicBlock> start;
+    shared_ptr<BasicBlock> end;
+    uint64_t count = 0; // to be populated
+
+    string toString() const;
+
+    bool operator==(Edge const& other) const {
+        return start == other.start && end == other.end && count == other.count;
+    }
+};
+
+struct EdgeHash {
+    size_t operator()(const Edge& edge) const {
+        size_t h1 = hash<shared_ptr<BasicBlock>>{}(edge.start);
+        size_t h2 = hash<shared_ptr<BasicBlock>>{}(edge.end);
+        size_t h3 = hash<uint64_t>{}(edge.count);
+
+        return h1 ^ (h2 << 1) ^ (h3 << 2);
+    }
 };
 
 } // fusion

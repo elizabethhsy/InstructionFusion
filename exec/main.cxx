@@ -1,4 +1,3 @@
-#include "instructions.h"
 #include "rules/celio_2016_rules.h"
 #include "rules/my_own_rules.h"
 
@@ -6,6 +5,9 @@
 #include <exampleRules.h>
 #include <experiment.h>
 #include <fusion.h>
+#include <instructionCount.h>
+#include <instructions.h>
+#include <simulationExperiment.h>
 
 #include <chrono>
 #include <fmt/core.h>
@@ -30,7 +32,7 @@ int main(int argc, char const *argv[])
 
     const auto now = std::chrono::system_clock::now();
     std::string dirPath =
-            "/Users/elizabeth/Desktop/Cambridge/Dissertation/cleaned_data";
+            "/Users/elizabeth/Desktop/Cambridge/Dissertation/cleaned data";
     std::string resultsPath =
         fmt::format(
             "/Users/elizabeth/Desktop/Cambridge/Dissertation/data results/{}",
@@ -43,7 +45,7 @@ int main(int argc, char const *argv[])
 
     auto const& baseRuns = my_rules::baseRuns;
     std::vector<fusion::ExperimentRun> runs = baseRuns;
-    for (int i = 1; i <= 10; i++) {
+    for (int i = 1; i <= 100; i++) {
         for (auto const& run : baseRuns) {
             std::unordered_set<fusion::FusionRulePtr> rules;
             for (auto rule : run.rules) {
@@ -62,8 +64,25 @@ int main(int argc, char const *argv[])
         }
     }
 
-    fusion::Experiment experiment(fileNames, runs);
-    auto results = experiment.run();
-    experiment.save(results, resultsPath);
+    auto experimentManager = std::make_shared<fusion::ExperimentManager>(
+        fileNames,
+        runs
+    );
+    auto instructionCountResults = experimentManager->run
+        <fusion::InstructionCountExperiment, fusion::InstructionCountResults>();
+    experimentManager->save
+        <fusion::InstructionCountExperiment, fusion::InstructionCountResults>(
+            instructionCountResults,
+            resultsPath
+        );
+    
+    // auto simulationResults = experimentManager->run
+    //     <fusion::SimulationExperiment, fusion::SimulationResults>();
+    // experimentManager->save
+    //     <fusion::SimulationExperiment, fusion::SimulationResults>(
+    //         simulationResults,
+    //         resultsPath
+    //     );
+
     return 0;
 }

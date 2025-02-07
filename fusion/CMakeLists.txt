@@ -8,6 +8,21 @@ add_subdirectory(common)
 add_subdirectory(core)
 add_subdirectory(simulation)
 
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
+
+set(CMAKE_CXX_FLAGS "-O3 -Wall -Wextra")
+set(CMAKE_CXX_FLAGS_DEBUG "-g -Wall -Wextra")
+
+add_library(${PROJECT_NAME} INTERFACE)
+target_link_libraries(${PROJECT_NAME} INTERFACE
+    common
+    core
+    simulation
+)
+add_library(fusion::fusion ALIAS fusion)
+
 INCLUDE(GNUInstallDirs)
 # create config file
 include(CMakePackageConfigHelpers)
@@ -24,7 +39,7 @@ write_basic_package_version_file(
     COMPATIBILITY SameMajorVersion
 )
 
-install(TARGETS common core simulation
+install(TARGETS fusion common core simulation
     EXPORT fusionTargets
     LIBRARY
             COMPONENT fusion-lib

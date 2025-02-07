@@ -5,11 +5,12 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 add_subdirectory(tests)
+find_package(Boost REQUIRED COMPONENTS filesystem)
 
 file(GLOB SOURCES "src/*.cxx")
 file(GLOB HEADERS
     "include/*.h"
-    ${CMAKE_CURRENT_BINARY_DIR}/fusion_core_export.h
+    ${CMAKE_CURRENT_BINARY_DIR}/fusion_common_export.h
 )
 
 add_library(${PROJECT_NAME} ${SOURCES} ${HEADERS})
@@ -33,7 +34,6 @@ generate_export_header(${PROJECT_NAME}
 )
 
 find_package(fmt REQUIRED)
-find_package(Boost REQUIRED COMPONENTS filesystem)
-target_link_libraries(${PROJECT_NAME} PRIVATE
+target_link_libraries(${PROJECT_NAME} PUBLIC
     fmt::fmt ${Boost_LIBRARIES}
 )

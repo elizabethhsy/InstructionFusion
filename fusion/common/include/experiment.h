@@ -30,14 +30,14 @@ struct FUSION_COMMON_EXPORT ExperimentManager :
 
     template<class Experiment, typename Result>
     Result run() {
-        Experiment experiment(shared_from_this());
+        Experiment experiment(this->shared_from_this());
         auto results = experiment.run();
         return results;
     }
 
     template<class Experiment, typename Result>
-    void save(Result const& results) {
-        Experiment::save(results);
+    void save(Result const& results, string resultsPath) {
+        Experiment::save(results, resultsPath);
     }
 
     vector<shared_ptr<File>> files;

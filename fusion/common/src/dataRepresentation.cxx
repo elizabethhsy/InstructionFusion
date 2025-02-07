@@ -4,7 +4,6 @@
 #include "macros.h"
 
 #include <algorithm>
-#include <boost/algorithm/string.hpp>
 #include <cassert>
 #include <filesystem>
 #include <fmt/core.h>
@@ -15,6 +14,10 @@
 #include <sstream>
 #include <unordered_set>
 #include <vector>
+
+#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/join.hpp>
+#include <boost/range/adaptor/transformed.hpp>
 
 namespace fusion
 {
@@ -82,6 +85,32 @@ string Instr::toString() const
 ostream& operator<<(ostream& os, Instr const& instr) {
     os << instr.toString();
     return os;
+}
+
+string InstrBlock::toString(string name) const
+{
+    return fmt::format(
+        "{}: label={}, addr={:#04x}, count={}, instructions={}",
+        name,
+        label,
+        addr,
+        count,
+        boost::algorithm::join(
+            instructions |
+            boost::adaptors::transformed(
+                [](shared_ptr<Instr> const& instr)
+                {
+                    return instr->toString();
+                }
+            ),
+            ", "
+        )
+    );
+}
+
+string FusedBlock::toString() const
+{
+    return InstrBlock::toString("Fused Block");
 }
 
 CriticalSection::CriticalSection(
