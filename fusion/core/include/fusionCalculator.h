@@ -29,6 +29,7 @@ struct FUSION_CORE_NO_EXPORT FusionResults
     uint64_t totalInstructions;
     uint64_t instructionsAfterFuse;
     uint64_t fusedInstructions;
+    vector<FusedBlock> fusedBlocks;
     vector<pair<uint64_t, uint64_t>> fusionLengths; // count, block length
     double avgFusionLength;
     double fusedPercentage;

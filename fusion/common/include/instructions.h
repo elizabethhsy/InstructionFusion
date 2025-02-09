@@ -40,6 +40,12 @@ const unordered_set<string> memoryInstructions = {
     "csc.b", "csc.w.aqrl", "csd", "csh", "csw", "lui"
 };
 
+const unordered_set<string> loadInstructions = {
+    "c.li", "c.lui", "cfld", "cflw", "cfsd", "cfsw", "clb", "clbu", "clc", "cld",
+    "clh", "clhu", "clr.b.aq", "clr.w.aqrl", "clw", "clwu", "crrl", "csb", "csc",
+    "csc.b", "csc.w.aqrl", "csd", "csh", "csw", "lui"
+};
+
 const unordered_set<string> systemInstructions = {
     "<unknown>", "ecall", "fence"
 };

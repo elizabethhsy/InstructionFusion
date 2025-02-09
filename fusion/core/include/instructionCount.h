@@ -18,7 +18,7 @@ using namespace std;
 struct FUSION_CORE_EXPORT InstructionCountRunResults
 {
     ExperimentRun const run;
-    vector<FusionResults> fusionResults;
+    vector<FusionResults> results;
     FusionResults aggregateResults;
 };
 
@@ -35,9 +35,12 @@ struct FUSION_CORE_EXPORT InstructionCountExperiment
     InstructionCountExperiment(shared_ptr<ExperimentManager> manager)
         : manager(manager) {};
 
-    InstructionCountResults run();
+    ExperimentResults<FusionResults> run();
     // writes results to CSV
-    static void save(InstructionCountResults const& results, string resultsPath);
+    static void save(
+        ExperimentResults<FusionResults> const& results,
+        string resultsPath
+    );
 private:
     shared_ptr<ExperimentManager> manager;
 };

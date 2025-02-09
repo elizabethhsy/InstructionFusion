@@ -37,5 +37,5 @@ find_package(ortools REQUIRED)
 find_package(Boost REQUIRED COMPONENTS filesystem)
 find_package (Eigen3 3.3 REQUIRED NO_MODULE)
 target_link_libraries(${PROJECT_NAME} PUBLIC
-    fmt::fmt ${Boost_LIBRARIES} common Eigen3::Eigen ortools::ortools
+    fmt::fmt ${Boost_LIBRARIES} common core Eigen3::Eigen ortools::ortools
 )

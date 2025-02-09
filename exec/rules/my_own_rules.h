@@ -85,18 +85,18 @@ vector<ExperimentRun> baseRuns = {
     //         )
     //     }
     // },
-    // ExperimentRun{
-    //     .title = "arithmetic end memory/branch",
-    //     .userDefinedKey = "0",
-    //     .rules = unordered_set<FusionRulePtr>{
-    //         make_shared<FusionRule>(
-    //             sameCount.chain(arithmeticEndMemory)
-    //         ),
-    //         make_shared<FusionRule>(
-    //             sameCount.chain(arithmeticEndBranch)
-    //         )
-    //     }
-    // },
+    ExperimentRun{
+        .title = "arithmetic end memory/branch",
+        .userDefinedKey = "0",
+        .rules = unordered_set<FusionRulePtr>{
+            make_shared<FusionRule>(
+                sameCount.chain(arithmeticEndMemory)
+            ),
+            make_shared<FusionRule>(
+                sameCount.chain(arithmeticEndBranch)
+            )
+        }
+    }
     // ExperimentRun{
     //     .title = "arithmetic only (I)",
     //     .userDefinedKey = "0",
@@ -152,28 +152,7 @@ vector<ExperimentRun> baseRuns = {
     //     .rules = unordered_set<FusionRulePtr>{
     //         make_shared<FusionRule>(acrossBranches)
     //     }
-    // },
-    // ExperimentRun{
-    //     .title = "same count",
-    //     .userDefinedKey = "0",
-    //     .rules = unordered_set<FusionRulePtr>{
-    //         make_shared<FusionRule>(sameCount)
-    //     }
-    // },
-    // ExperimentRun{
-    //     .title = "similar count",
-    //     .userDefinedKey = "0",
-    //     .rules = unordered_set<FusionRulePtr>{
-    //         make_shared<FusionRule>(similarCount(1))
-    //     }
-    // },
-    ExperimentRun{
-        .title = "always fusable",
-        .userDefinedKey = "0",
-        .rules = unordered_set<FusionRulePtr>{
-            make_shared<FusionRule>(alwaysFusable)
-        }
-    }
+    // }
 };
 
 } // my_rules

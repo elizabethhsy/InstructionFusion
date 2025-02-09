@@ -8,6 +8,7 @@
 #include <instructionCount.h>
 #include <instructions.h>
 #include <simulationExperiment.h>
+#include <inOrderPipeline.h>
 
 #include <chrono>
 #include <fmt/core.h>
@@ -45,7 +46,7 @@ int main(int argc, char const *argv[])
 
     auto const& baseRuns = my_rules::baseRuns;
     std::vector<fusion::ExperimentRun> runs = baseRuns;
-    for (int i = 1; i <= 100; i++) {
+    for (int i = 1; i <= 10; i++) {
         for (auto const& run : baseRuns) {
             std::unordered_set<fusion::FusionRulePtr> rules;
             for (auto rule : run.rules) {
@@ -69,12 +70,22 @@ int main(int argc, char const *argv[])
         runs
     );
     auto instructionCountResults = experimentManager->run
-        <fusion::InstructionCountExperiment, fusion::InstructionCountResults>();
+        <fusion::InstructionCountExperiment, fusion::FusionResults>
+        ();
     experimentManager->save
-        <fusion::InstructionCountExperiment, fusion::InstructionCountResults>(
+        <fusion::InstructionCountExperiment, fusion::FusionResults>(
             instructionCountResults,
             resultsPath
         );
+    auto cycleCountResults = experimentManager->run
+        <fusion::PipelineExperiment<fusion::InOrderPipeline>, fusion::PipelineResult>(
+            instructionCountResults
+        );
+    experimentManager->save
+        <fusion::PipelineExperiment<fusion::InOrderPipeline>, fusion::PipelineResult>(
+            cycleCountResults
+        );
+    LOG_INFO(cycleCountResults.toString());
     
     // auto simulationResults = experimentManager->run
     //     <fusion::SimulationExperiment, fusion::SimulationResults>();

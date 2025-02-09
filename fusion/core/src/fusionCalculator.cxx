@@ -33,16 +33,16 @@ float FusionCalculator::calcAvgFusionLength(
 )
 {
     double avgLength = 0;
-    uint64_t totalCount = 0;
+    uint64_t totalCycles = 0;
 
     for (auto block : fusionLengths) {
         auto const& count = block.first;
         auto const& length = block.second;
 
         avgLength += count*length;
-        totalCount += count;
+        totalCycles += count;
     }
-    avgLength = double(avgLength)/totalCount;
+    avgLength = double(avgLength)/totalCycles;
     return avgLength;
 }
 
@@ -58,6 +58,7 @@ FusionResults FusionCalculator::calculateFusion(
         )
     );
 
+    vector<FusedBlock> fusedBlocks;
     vector<shared_ptr<Instr>> currBlock;
     auto const& rules = run.rules;
     uint64_t dynamicCount = file.instructions[0].count;
@@ -73,6 +74,13 @@ FusionResults FusionCalculator::calculateFusion(
         if (currBlock.size() == 0) return;
 
         // record the results
+        auto const& first = currBlock[0];
+        fusedBlocks.emplace_back(FusedBlock(
+            first->label,
+            first->addr,
+            count,
+            currBlock
+        ));
         instructionsAfterFuse += count;
         fusionLengths.push_back(make_pair(count, currBlock.size()));
 
@@ -177,7 +185,8 @@ FusionResults FusionCalculator::calculateFusion(
         .instructionsAfterFuse = instructionsAfterFuse,
         .fusedInstructions = fusedInstructions,
         .fusedPercentage = fusedPercentage,
-        .fusionLengths = fusionLengths,
+        .fusedBlocks = std::move(fusedBlocks),
+        .fusionLengths = std::move(fusionLengths),
         .avgFusionLength = calcAvgFusionLength(fusionLengths)
     };
 }

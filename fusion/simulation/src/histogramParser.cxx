@@ -430,7 +430,7 @@ void ControlFlowGraph::findEdges()
     const MPSolver::ResultStatus result_status = solver->Solve();
     for (int i = 0; i < edges.size(); i++) {
         edges[i].count = vars[i]->solution_value();
-        LOG_INFO(fmt::format("edge={}", edges[i].toString()));
+        LOG_DEBUG(fmt::format("edge={}", edges[i].toString()));
     }
     LOG_DEBUG("finished");
 }

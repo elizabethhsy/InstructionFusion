@@ -1,5 +1,7 @@
 #include "experiment.h"
 
+#include <boost/range/adaptor/transformed.hpp>
+
 namespace fusion
 {
 

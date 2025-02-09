@@ -87,6 +87,15 @@ ostream& operator<<(ostream& os, Instr const& instr) {
     return os;
 }
 
+InstrBlock::InstrBlock(
+    string label,
+    uint32_t addr,
+    uint64_t count,
+    vector<shared_ptr<Instr>> instructions
+) : label(label), addr(addr), count(count), instructions(instructions)
+{
+}
+
 string InstrBlock::toString(string name) const
 {
     return fmt::format(

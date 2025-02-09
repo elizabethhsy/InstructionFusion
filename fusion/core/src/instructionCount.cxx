@@ -10,10 +10,10 @@ namespace fusion
 
 using namespace std;
 
-InstructionCountResults InstructionCountExperiment::run()
+ExperimentResults<FusionResults> InstructionCountExperiment::run()
 {
     FusionCalculator calculator;
-    vector<InstructionCountRunResults> runResults;
+    vector<RunResult<FusionResults>> runResults;
     
     auto run_experiment = [&](ExperimentRun const& run) {
         vector<FusionResults> results;
@@ -68,9 +68,9 @@ InstructionCountResults InstructionCountExperiment::run()
             double(aggregateResults.totalInstructions);
         
         // add run results to the overall experiment results vector
-        runResults.push_back(InstructionCountRunResults{
+        runResults.push_back(RunResult<FusionResults>{
             .run = run,
-            .fusionResults = results,
+            .results = results,
             .aggregateResults = aggregateResults
         });
     };
@@ -79,13 +79,13 @@ InstructionCountResults InstructionCountExperiment::run()
         run_experiment(run);
     }
 
-    return InstructionCountResults{
+    return ExperimentResults<FusionResults>{
         .runResults = std::move(runResults)
     };
 }
 
 void InstructionCountExperiment::save(
-    InstructionCountResults const& results,
+    ExperimentResults<FusionResults> const& results,
     string resultsPath
 )
 {
@@ -96,14 +96,14 @@ void InstructionCountExperiment::save(
     aggregateWriter.writeLine("rule_title,rule_description,user_defined_key,"
         "total_instructions,instructions_after_fuse,instructions_fused,"
         "percentage_fused,average_fusion_length");
-    overviewWriter.writeLine("rule_title,rule_description,user_defined_key,file,"
-        "total_instructions,instructions_after_fuse,instructions_fused,"
+    overviewWriter.writeLine("rule_title,rule_description,user_defined_key,"
+        "file,total_instructions,instructions_after_fuse,instructions_fused,"
         "percentage_fused,average_fusion_length");
-    fusionLengthsWriter.writeLine("rule_title,rule_description,user_defined_key,file,"
-        "count,fusion_length");
+    fusionLengthsWriter.writeLine("rule_title,rule_description,"
+        "user_defined_key,file,count,fusion_length");
     
     for (auto const& run : results.runResults) {
-        for (auto const& res : run.fusionResults) {
+        for (auto const& res : run.results) {
             overviewWriter.writeLine(
                 fmt::format(
                     "{},{},{},{},{},{},{},{},{}",
@@ -136,7 +136,7 @@ void InstructionCountExperiment::save(
     }
 
     for (auto const& run : results.runResults) {
-        for (auto const& res : run.fusionResults) {
+        for (auto const& res : run.results) {
             for (auto const& pair : res.fusionLengths) { // pair of count, length
                 fusionLengthsWriter.writeLine(
                     fmt::format(

@@ -4,6 +4,8 @@
 
 #include "fusion.h"
 
+#include <boost/range/adaptor/transformed.hpp>
+
 namespace fusion
 {
 
@@ -17,6 +19,52 @@ struct FUSION_COMMON_EXPORT ExperimentRun
     unordered_set<FusionRulePtr> rules;
 };
 
+template<typename Result>
+struct RunResult
+{
+    ExperimentRun const run;
+    vector<Result> results;
+    Result aggregateResults;
+
+    string toString() const {
+        return fmt::format(
+            "run_result: results=[{}], aggregate_results={}",
+            boost::algorithm::join(
+                results |
+                boost::adaptors::transformed(
+                    [](Result const& res)
+                    {
+                        return res.toString();
+                    }
+                ),
+                ", "
+            ),
+            aggregateResults.toString()
+        );
+    }
+};
+
+template<typename Result>
+struct ExperimentResults
+{
+    vector<RunResult<Result>> runResults;
+    string toString() const {
+        return fmt::format(
+            "Experiment results: run_results=[\n\t{}\n]",
+            boost::algorithm::join(
+                runResults |
+                boost::adaptors::transformed(
+                    [](RunResult<Result> const& runRes)
+                    {
+                        return runRes.toString();
+                    }
+                ),
+                "\n\t"
+            )
+        );
+    }
+};
+
 // an ExperimentManager is able to take the input and run any experiment that
 // the user passes into it. It abstracts away the data input stage from the
 // processing stage.
@@ -28,15 +76,16 @@ struct FUSION_COMMON_EXPORT ExperimentManager :
         vector<ExperimentRun> const& runs
     );
 
-    template<class Experiment, typename Result>
-    Result run() {
+    template<class Experiment, typename Result, typename... Args>
+    ExperimentResults<Result> run(Args... args) {
         Experiment experiment(this->shared_from_this());
-        auto results = experiment.run();
+        auto results = experiment.run(std::forward<Args>(args)...);
         return results;
     }
 
     template<class Experiment, typename Result>
-    void save(Result const& results, string resultsPath) {
+    void save(ExperimentResults<Result> const& results, string resultsPath)
+    {
         Experiment::save(results, resultsPath);
     }
 

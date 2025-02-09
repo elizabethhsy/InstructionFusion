@@ -56,16 +56,32 @@ ostream& operator<<(ostream& os, Instr const& instr);
 
 struct InstrBlock
 {
-    string label = "";
+    string label;
     uint32_t addr; // starting address
     uint64_t count;
     vector<shared_ptr<Instr>> instructions;
+
+    InstrBlock() : label(""), addr(0), count(0), instructions({}) {}
+    InstrBlock(
+        string label,
+        uint32_t addr,
+        uint64_t count,
+        vector<shared_ptr<Instr>> instructions
+    );
 
     string toString(string name) const;
 };
 
 struct FusedBlock : InstrBlock
 {
+    FusedBlock(
+        string label,
+        uint32_t addr,
+        uint64_t count,
+        vector<shared_ptr<Instr>> instructions
+    ) : InstrBlock(label, addr, count, std::move(instructions))
+    {}
+
     string toString() const;
 };
 
