@@ -9,12 +9,13 @@ using namespace std;
 
 ExperimentManager::ExperimentManager(
     vector<string> filepaths,
-    vector<ExperimentRun> const& runs
-) : runs(runs)
+    vector<ExperimentRun> const& runs,
+    string resultsPath
+) : runs(runs), resultsPath(resultsPath)
 {
     // create the necessary file objects
     for (auto filepath : filepaths) {
-        files.push_back(make_unique<File>(filepath));
+        files.push_back(make_shared<File>(filepath));
     }
 
     // for each file, calculate the statistics and print them out

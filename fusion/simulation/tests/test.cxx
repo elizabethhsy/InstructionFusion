@@ -34,7 +34,7 @@ TEST_CASE("construct control flow graph", "[simulation]") {
 TEST_CASE("cycle count", "[simulation]") {
     string path = "/Users/elizabeth/Desktop/Cambridge/Dissertation/"
         "fusion/simulation/tests/data.csv";
-    File file(path);
+    auto file = make_shared<File>(path);
 
     FusionCalculator calculator;
     InOrderPipeline pipeline;

@@ -20,7 +20,7 @@ using namespace std;
 TEST_CASE("test fusion", "[fusion]") {
     string path = "/Users/elizabeth/Desktop/Cambridge/Dissertation/"
         "fusion/core/tests/data.csv";
-    File file(path);
+    auto file = make_shared<File>(path);
     Instr first = {
         .addr = 0xfc830,
         .count = 100,
@@ -29,8 +29,8 @@ TEST_CASE("test fusion", "[fusion]") {
         .operands = {Operand{"cs6"}, Operand{"64(csp)"}}
     };
 
-    REQUIRE(file.instructions[0] == first);
-    REQUIRE(file.stats->criticalSections[0]->length == 8);
+    REQUIRE(file->instructions[0] == first);
+    REQUIRE(file->stats->criticalSections[0]->length == 8);
 
     // once we parsed the file correctly, try to fuse it
     FusionCalculator calculator;

@@ -19,14 +19,14 @@ ExperimentResults<FusionResults> InstructionCountExperiment::run()
         vector<FusionResults> results;
         // collect aggregate results across all files for each run
         FusionResults aggregateResults{
-            .file = *(manager->files)[0],
+            .file = (manager->files)[0],
             .run = run
         };
 
         LOG_INFO(fmt::format("{} ({})", run.title, run.userDefinedKey));
         for (auto const& file : manager->files) {
             FusionResults result = calculator.calculateFusion(
-                *file,
+                file,
                 run
             );
 
@@ -68,11 +68,13 @@ ExperimentResults<FusionResults> InstructionCountExperiment::run()
             double(aggregateResults.totalInstructions);
         
         // add run results to the overall experiment results vector
-        runResults.push_back(RunResult<FusionResults>{
-            .run = run,
-            .results = results,
-            .aggregateResults = aggregateResults
-        });
+        runResults.push_back(
+            RunResult<FusionResults>(
+                run,
+                std::move(results),
+                std::move(aggregateResults)
+            )
+        );
     };
 
     for (auto const& run : manager->runs) {
@@ -85,10 +87,10 @@ ExperimentResults<FusionResults> InstructionCountExperiment::run()
 }
 
 void InstructionCountExperiment::save(
-    ExperimentResults<FusionResults> const& results,
-    string resultsPath
+    ExperimentResults<FusionResults> const& results
 )
 {
+    auto resultsPath = manager->resultsPath;
     CSVWriter aggregateWriter(resultsPath + "/aggregate.csv");
     CSVWriter overviewWriter(resultsPath + "/overview.csv");
     CSVWriter fusionLengthsWriter(resultsPath + "/fusionLengths.csv");
@@ -110,7 +112,7 @@ void InstructionCountExperiment::save(
                     res.run.title,
                     res.run.description,
                     res.run.userDefinedKey,
-                    res.file.fileName,
+                    res.file->fileName,
                     res.totalInstructions,
                     res.instructionsAfterFuse,
                     res.fusedInstructions,
@@ -144,7 +146,7 @@ void InstructionCountExperiment::save(
                         res.run.title,
                         res.run.description,
                         res.run.userDefinedKey,
-                        res.file.fileName,
+                        res.file->fileName,
                         pair.first, // count
                         pair.second // length
                     )

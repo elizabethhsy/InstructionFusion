@@ -37,10 +37,7 @@ struct FUSION_CORE_EXPORT InstructionCountExperiment
 
     ExperimentResults<FusionResults> run();
     // writes results to CSV
-    static void save(
-        ExperimentResults<FusionResults> const& results,
-        string resultsPath
-    );
+    void save(ExperimentResults<FusionResults> const& results);
 private:
     shared_ptr<ExperimentManager> manager;
 };

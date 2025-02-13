@@ -13,10 +13,10 @@ using namespace std;
 
 struct FUSION_COMMON_EXPORT ExperimentRun
 {
-    string title;
-    string description;
-    string userDefinedKey; // users can use this to identify rules
-    unordered_set<FusionRulePtr> rules;
+    string title = "";
+    string description = "";
+    string userDefinedKey = ""; // users can use this to identify rules
+    unordered_set<FusionRulePtr> rules = {};
 };
 
 template<typename Result>
@@ -25,6 +25,13 @@ struct RunResult
     ExperimentRun const run;
     vector<Result> results;
     Result aggregateResults;
+
+    RunResult<Result>(
+        ExperimentRun const run,
+        vector<Result> results,
+        Result aggregateResults
+    ) : run(run), results(results), aggregateResults(aggregateResults)
+    {}
 
     string toString() const {
         return fmt::format(
@@ -48,6 +55,7 @@ template<typename Result>
 struct ExperimentResults
 {
     vector<RunResult<Result>> runResults;
+    
     string toString() const {
         return fmt::format(
             "Experiment results: run_results=[\n\t{}\n]",
@@ -73,7 +81,8 @@ struct FUSION_COMMON_EXPORT ExperimentManager :
 {
     ExperimentManager(
         vector<string> filepaths,
-        vector<ExperimentRun> const& runs
+        vector<ExperimentRun> const& runs,
+        string resultsPath
     );
 
     template<class Experiment, typename Result, typename... Args>
@@ -84,13 +93,15 @@ struct FUSION_COMMON_EXPORT ExperimentManager :
     }
 
     template<class Experiment, typename Result>
-    void save(ExperimentResults<Result> const& results, string resultsPath)
+    void save(ExperimentResults<Result> const& results)
     {
-        Experiment::save(results, resultsPath);
+        Experiment experiment(this->shared_from_this());
+        experiment.save(results);
     }
 
     vector<shared_ptr<File>> files;
     vector<ExperimentRun> const& runs;
+    string resultsPath;
 private:
     float avgCriticalSectionSize();
     uint64_t totalInstructionNum();

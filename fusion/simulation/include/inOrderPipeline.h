@@ -14,8 +14,9 @@ using namespace std;
 
 struct InOrderPipeline
 {
-    PipelineRunResult run(InstructionCountRunResults const& instrCountResult);
+    // PipelineRunResult run(InstructionCountRunResults const& instrCountResult);
     PipelineResult computeCycleCount(FusionResults const& instructionCounts);
+    BaselineResult computeBaseline(shared_ptr<File> file); // compute cycle count with no fusion
 };
 
 } // fusion

@@ -67,25 +67,28 @@ int main(int argc, char const *argv[])
 
     auto experimentManager = std::make_shared<fusion::ExperimentManager>(
         fileNames,
-        runs
+        runs,
+        resultsPath
     );
     auto instructionCountResults = experimentManager->run
         <fusion::InstructionCountExperiment, fusion::FusionResults>
         ();
     experimentManager->save
         <fusion::InstructionCountExperiment, fusion::FusionResults>(
-            instructionCountResults,
-            resultsPath
+            instructionCountResults
         );
     auto cycleCountResults = experimentManager->run
-        <fusion::PipelineExperiment<fusion::InOrderPipeline>, fusion::PipelineResult>(
+        <fusion::PipelineExperiment<fusion::InOrderPipeline>,
+        fusion::PipelineResult>
+        (
             instructionCountResults
         );
     experimentManager->save
-        <fusion::PipelineExperiment<fusion::InOrderPipeline>, fusion::PipelineResult>(
+        <fusion::PipelineExperiment<fusion::InOrderPipeline>,
+        fusion::PipelineResult>
+        (
             cycleCountResults
         );
-    LOG_INFO(cycleCountResults.toString());
     
     // auto simulationResults = experimentManager->run
     //     <fusion::SimulationExperiment, fusion::SimulationResults>();

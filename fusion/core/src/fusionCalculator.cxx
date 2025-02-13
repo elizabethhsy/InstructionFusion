@@ -19,7 +19,7 @@ string FusionResults::toString() const
         "total_instructions={}, "
         "instructions_after_fuse={}, fused_instructions={}, avg_fusion_length="
         "{}, fused_percentage={}",
-        file.fileName,
+        file->fileName,
         totalInstructions,
         instructionsAfterFuse,
         fusedInstructions,
@@ -47,7 +47,7 @@ float FusionCalculator::calcAvgFusionLength(
 }
 
 FusionResults FusionCalculator::calculateFusion(
-    File const& file,
+    shared_ptr<File> file,
     ExperimentRun const& run)
 {
     LOG_DEBUG(
@@ -61,7 +61,7 @@ FusionResults FusionCalculator::calculateFusion(
     vector<FusedBlock> fusedBlocks;
     vector<shared_ptr<Instr>> currBlock;
     auto const& rules = run.rules;
-    uint64_t dynamicCount = file.instructions[0].count;
+    uint64_t dynamicCount = file->instructions[0].count;
     auto tempRules = rules;
 
     // keep track of results
@@ -92,7 +92,7 @@ FusionResults FusionCalculator::calculateFusion(
 
     // iterate through every instruction. For each instruction, we iterate over
     // all the functions that are still in contention.
-    for (auto const& instruction : file.instructions) {
+    for (auto const& instruction : file->instructions) {
         bool endOfFusable = false;
         bool startOfFusable = false;
 
@@ -103,12 +103,12 @@ FusionResults FusionCalculator::calculateFusion(
 
         for (auto fun : rules) {
             auto result = fun->apply(currBlock, instruction);
-            LOG_DEBUG(
-                fmt::format(
-                    "FusableResult type of {}",
-                    boost::describe::enum_to_string(result, "unknown")
-                )
-            );
+            // LOG_DEBUG(
+            //     fmt::format(
+            //         "FusableResult type of {}",
+            //         boost::describe::enum_to_string(result, "unknown")
+            //     )
+            // );
             switch (result) {
                 case FusableResult::FUSABLE:
                 {
@@ -173,7 +173,7 @@ FusionResults FusionCalculator::calculateFusion(
     new_round(dynamicCount); // wrap up the final block
 
     // calculate stats
-    auto totalInstructions = file.stats->totalInstructionNum;
+    auto totalInstructions = file->stats->totalInstructionNum;
     assert(totalInstructions >= instructionsAfterFuse);
     auto fusedInstructions = totalInstructions - instructionsAfterFuse;
     auto fusedPercentage = 100*(fusedInstructions)/double(totalInstructions);

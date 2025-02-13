@@ -23,7 +23,7 @@ using namespace std;
 
 struct FUSION_CORE_NO_EXPORT FusionResults
 {
-    File const& file;
+    shared_ptr<File> file;
     ExperimentRun const& run;
 
     uint64_t totalInstructions;
@@ -40,7 +40,7 @@ struct FUSION_CORE_NO_EXPORT FusionResults
 struct FUSION_CORE_NO_EXPORT FusionCalculator
 {
     FusionResults calculateFusion(
-        File const& file,
+        shared_ptr<File> file,
         ExperimentRun const& run
     );
 

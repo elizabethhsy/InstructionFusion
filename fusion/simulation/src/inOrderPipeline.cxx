@@ -8,17 +8,17 @@
 namespace fusion
 {
 
-PipelineRunResult InOrderPipeline::run(
-    InstructionCountRunResults const& instrCountRunResult
-)
-{
-    PipelineRunResult results;
-    for (auto const& instrCountResult : instrCountRunResult.results) {
-        auto result = computeCycleCount(instrCountResult);
-        results.pipelineResults.push_back(result);
-    }
-    return results;
-}
+// PipelineRunResult InOrderPipeline::run(
+//     InstructionCountRunResults const& instrCountRunResult
+// )
+// {
+//     PipelineRunResult results;
+//     for (auto const& instrCountResult : instrCountRunResult.results) {
+//         auto result = computeCycleCount(instrCountResult);
+//         results.pipelineResults.push_back(result);
+//     }
+//     return results;
+// }
 
 // take a basic block at a time, and see if there are any stalls. In a simple
 // in-order pipeline (with good forwarding), a stall only occurs if there is a
@@ -31,8 +31,10 @@ PipelineResult InOrderPipeline::computeCycleCount(
 )
 {
     auto const& blocks = instructionCounts.fusedBlocks;
-    PipelineResult results;
-    results.totalInstructions = instructionCounts.totalInstructions;
+    PipelineResult results(
+        instructionCounts.file,
+        make_shared<ExperimentRun>(instructionCounts.run)
+    );
 
     unordered_set<Operand> loadOperands;
 
@@ -73,6 +75,50 @@ PipelineResult InOrderPipeline::computeCycleCount(
     }
 
     results.totalCycles = results.cyclesWithoutStalls + results.stalls;
+    return results;
+}
+
+BaselineResult InOrderPipeline::computeBaseline(shared_ptr<File> file)
+{
+    BaselineResult results(file);
+    unordered_set<Operand> loadOperands;
+
+    auto find_ld_operands = [&loadOperands](Instr const& instruction) { // TODO: deduplicate
+        // check if it's a load instruction
+        if (loadInstructions.contains(instruction.instr)) {
+            // add all operands to the unordered set
+            for (auto const& op : instruction.operands) {
+                loadOperands.insert(op);
+            }
+        }
+    };
+
+    auto test_for_operands = [&loadOperands](Instr const& instruction)
+        -> bool
+    {
+        if (!memoryInstructions.contains(instruction.instr)) {
+            for (auto const& op : instruction.operands) {
+                if (loadOperands.contains(op)) return true;
+            }
+        }
+        return false;
+    };
+
+    for (auto const& instr : file->instructions) {
+        results.cyclesWithoutStalls += instr.count;
+
+        // test for shared operands in the block
+        if (test_for_operands(instr)) {
+            results.stalls += instr.count;
+        }
+
+        // add load operands for the next block to test from
+        loadOperands.clear();
+        find_ld_operands(instr);
+    }
+
+    results.totalCycles = results.cyclesWithoutStalls + results.stalls;
+    // LOG_INFO(results.toString());
     return results;
 }
 
