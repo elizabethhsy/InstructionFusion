@@ -17,24 +17,9 @@ namespace fusion
 
 using namespace std;
 
-string BasicBlock::toString() const
-{
-    return InstrBlock::toString("Basic Block");
-}
-
 string Edge::toString() const
 {
     return fmt::format("{}-{}->{}", start->toString(), count, end->toString());
-}
-
-// check if two instructions belong in the same critical section
-inline bool BasicBlock::sameBasicBlock(
-    Instr const& prev,
-    Instr const& next
-)
-{
-    return (prev.count == next.count && !branchInstructions.contains(prev.instr)
-        && Instr::isContiguous(prev, next)) || (prev == next);
 }
 
 string ControlFlowPath::toString() const
@@ -264,10 +249,11 @@ void ControlFlowGraph::constructDependencies()
         // anything that is an address (translates to a hex number) or a label
         // (matches <label> string pattern).
         if (branchInstructions.contains(lastInstr->instr)) {
-            for (auto const& op : lastInstr->operands) {
+            for (auto const& operand : lastInstr->operands) {
                 // TODO: cleanup
+                auto const& op = operand.op;
                 try {
-                    auto intRep = stoi(op, nullptr, 16);
+                    auto intRep = stoul(op, nullptr, 16);
                     if (addr_map.contains(intRep)) {
                         add_edge(currBlock, addr_map[intRep]);
                     } else if (label_map.contains(op)) {

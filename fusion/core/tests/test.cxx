@@ -21,13 +21,13 @@ TEST_CASE("test fusion", "[fusion]") {
     string path = "/Users/elizabeth/Desktop/Cambridge/Dissertation/"
         "fusion/core/tests/data.csv";
     auto file = make_shared<File>(path);
-    Instr first = {
-        .addr = 0xfc830,
-        .count = 100,
-        .label = "BB_0",
-        .instr = "csc",
-        .operands = {Operand{"cs6"}, Operand{"64(csp)"}}
-    };
+    Instr first(
+        Addr(0xfc830),
+        100,
+        "csc",
+        {Operand{"cs6"}, Operand{"64(csp)"}},
+        "BB_0"
+    );
 
     REQUIRE(file->instructions[0] == first);
     REQUIRE(file->stats->criticalSections[0]->length == 8);

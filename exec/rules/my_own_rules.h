@@ -53,7 +53,7 @@ const FusionRule acrossBranches(
         if (branchInstructions.contains(instruction.instr)) {
             return FusableResult::FUSABLE;
         }
-        return arithmeticEndMemory.apply(block, instruction);
+        return sameCount.chain(arithmeticEndMemory).apply(block, instruction);
     }
 );
 
