@@ -1,6 +1,6 @@
 #pragma once
 
-#include <csvHandler.h>
+#include <fileHandler.h>
 #include <experiment.h>
 #include <instructionCount.h>
 
@@ -58,18 +58,12 @@ struct PipelineResult : BaselineResult
     double cyclePercentage() const;
 };
 
-// struct PipelineRunResult
-// {
-//     vector<PipelineResult> pipelineResults;
-// };
-
 template<typename Pipeline>
 struct PipelineExperiment
 {
     PipelineExperiment(shared_ptr<ExperimentManager> manager)
         : manager(manager) {}
     
-    // ExperimentResults<PipelineRunResult> run();
     template<typename... Args>
     ExperimentResults<PipelineResult> run(
         ExperimentResults<FusionResults> const& results,
@@ -121,11 +115,11 @@ struct PipelineExperiment
 
     void save(ExperimentResults<PipelineResult> const& results) {
         auto resultsPath = manager->resultsPath;
-        CSVWriter cyclesWriter(resultsPath + "/cycles.csv");
+        FileWriter cyclesWriter(resultsPath + "/cycles.csv");
         cyclesWriter.writeLine("rule_title,rule_description,user_defined_key,"
             "file,cycles_without_stalls,stalls,total_cycles,"
             "cycle_percentage");
-        CSVWriter aggregateWriter(resultsPath + "/aggregateCycles.csv");
+        FileWriter aggregateWriter(resultsPath + "/aggregateCycles.csv");
         aggregateWriter.writeLine("rule_title,rule_description,user_defined_key,"
             "cycles_without_stalls,stalls,total_cycles,cycle_percentage");
         

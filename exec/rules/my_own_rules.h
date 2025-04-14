@@ -57,6 +57,28 @@ const FusionRule acrossBranches(
     }
 );
 
+const FusionRule contiguousMemory(
+    [](vector<shared_ptr<Instr>> const& block, Instr const& instruction)
+        -> FusableResult
+    {
+        auto is_contiguous = [&](Instr const& prev, Instr const& next)
+        {
+            if (!loadInstructions.contains(prev.instr) ||
+                !loadInstructions.contains(next.instr))
+            {
+                return false;
+            }
+            // TODO: implement logic
+            return true;
+        };
+
+        if (is_contiguous(*block.back(), instruction)) {
+            return FusableResult::FUSABLE;
+        }
+        return FusableResult::NOT_FUSABLE;
+    }
+);
+
 vector<ExperimentRun> baseRuns = {
     ExperimentRun{
         .title = "arithmetic only",

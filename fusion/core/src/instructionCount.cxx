@@ -1,7 +1,7 @@
 #include "instructionCount.h"
 #include "fusion.h"
 
-#include <csvHandler.h>
+#include <fileHandler.h>
 #include <instructions.h>
 #include <macros.h>
 
@@ -91,9 +91,9 @@ void InstructionCountExperiment::save(
 )
 {
     auto resultsPath = manager->resultsPath;
-    CSVWriter aggregateWriter(resultsPath + "/aggregate.csv");
-    CSVWriter overviewWriter(resultsPath + "/overview.csv");
-    CSVWriter fusionLengthsWriter(resultsPath + "/fusionLengths.csv");
+    FileWriter aggregateWriter(resultsPath + "/aggregate.csv");
+    FileWriter overviewWriter(resultsPath + "/overview.csv");
+    FileWriter fusionLengthsWriter(resultsPath + "/fusionLengths.csv");
 
     aggregateWriter.writeLine("rule_title,rule_description,user_defined_key,"
         "total_instructions,instructions_after_fuse,instructions_fused,"

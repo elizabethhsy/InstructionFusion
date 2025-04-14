@@ -60,9 +60,8 @@ FusionResults FusionCalculator::calculateFusion(
 
     vector<FusedBlock> fusedBlocks;
     vector<shared_ptr<Instr>> currBlock;
-    auto const& rules = run.rules;
     uint64_t dynamicCount = file->instructions[0].count;
-    auto tempRules = rules;
+    auto tempRules = run.rules;
 
     // keep track of results
     uint64_t instructionsAfterFuse = 0;
@@ -71,6 +70,9 @@ FusionResults FusionCalculator::calculateFusion(
 
     // record the results, and start a new round
     auto new_round = [&](uint64_t count) {
+        tempRules = run.rules;
+        startOfBlock = true;
+
         if (currBlock.size() == 0) return;
 
         // record the results
@@ -84,10 +86,7 @@ FusionResults FusionCalculator::calculateFusion(
         instructionsAfterFuse += count;
         fusionLengths.push_back(make_pair(count, currBlock.size()));
 
-        // reset the tracking variables
         currBlock.clear();
-        tempRules = rules;
-        startOfBlock = true;
     };
 
     // iterate through every instruction. For each instruction, we iterate over
@@ -101,6 +100,7 @@ FusionResults FusionCalculator::calculateFusion(
             startOfBlock = false;
         }
 
+        auto rules = tempRules;
         for (auto fun : rules) {
             auto result = fun->apply(currBlock, instruction);
             // LOG_DEBUG(
@@ -159,6 +159,7 @@ FusionResults FusionCalculator::calculateFusion(
                 new_round(dynamicCount);
                 currBlock.push_back(make_shared<Instr>(instruction));
                 dynamicCount = instruction.count;
+                startOfBlock = false;
             } else { // NOT_FUSABLE
                 new_round(dynamicCount);
                 dynamicCount = instruction.count;

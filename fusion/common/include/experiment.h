@@ -95,9 +95,12 @@ struct FUSION_COMMON_EXPORT ExperimentManager :
     template<class Experiment, typename Result>
     void save(ExperimentResults<Result> const& results)
     {
+        this->saveConfig();
         Experiment experiment(this->shared_from_this());
         experiment.save(results);
     }
+
+    void saveConfig();
 
     vector<shared_ptr<File>> files;
     vector<ExperimentRun> const& runs;

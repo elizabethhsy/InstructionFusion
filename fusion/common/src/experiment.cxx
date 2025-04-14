@@ -1,4 +1,5 @@
 #include "experiment.h"
+#include "fileHandler.h"
 
 #include <boost/range/adaptor/transformed.hpp>
 
@@ -38,6 +39,35 @@ ExperimentManager::ExperimentManager(
             totalInstructionNum()
         )
     );
+}
+
+void ExperimentManager::saveConfig()
+{
+    // save a file specifying the config of the experiment within the
+    // experiment results folder
+    FileWriter configWriter(resultsPath + "/config.txt");
+    configWriter.writeLine("FILES:");
+
+    // output all the file names that were passed in
+    for (auto file : files) {
+        configWriter.writeLine(fmt::format("\t{}", file->fileName));
+    }
+
+    configWriter.writeLine("\nRUNS:");
+    // output the name and description of all the rules that were used
+    // for each run
+    for (auto run : runs) {
+        configWriter.writeLine(
+            fmt::format(
+                "\ttitle: {}\n"
+                "\t\tdescription: {}\n"
+                "\t\tuser defined key: {}",
+                run.title,
+                run.description,
+                run.userDefinedKey
+            )
+        );
+    }
 }
 
 float ExperimentManager::avgCriticalSectionSize()
