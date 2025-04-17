@@ -9,10 +9,11 @@ namespace fusion
 using namespace std;
 
 ExperimentManager::ExperimentManager(
+    string title,
     vector<string> filepaths,
     vector<ExperimentRun> const& runs,
     string resultsPath
-) : runs(runs), resultsPath(resultsPath)
+) : title(title), runs(runs), resultsPath(resultsPath)
 {
     // create the necessary file objects
     for (auto filepath : filepaths) {
@@ -46,6 +47,7 @@ void ExperimentManager::saveConfig()
     // save a file specifying the config of the experiment within the
     // experiment results folder
     FileWriter configWriter(resultsPath + "/config.txt");
+    configWriter.writeLine(fmt::format("TITLE: {}", title));
     configWriter.writeLine("FILES:");
 
     // output all the file names that were passed in

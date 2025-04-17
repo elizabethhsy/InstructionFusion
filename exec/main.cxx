@@ -44,28 +44,52 @@ int main(int argc, char const *argv[])
         name = fmt::format("{}/{}.csv", dirPath, name);
     }
 
-    auto const& baseRuns = celio_2016_rules::baseRuns;
-    std::vector<fusion::ExperimentRun> runs = baseRuns;
-    // for (int i = 1; i <= 10; i++) {
-    //     for (auto const& run : baseRuns) {
-    //         std::unordered_set<fusion::FusionRulePtr> rules;
-    //         for (auto rule : run.rules) {
-    //             rules.insert(std::make_shared<fusion::FusionRule>(
-    //                 fusion::maxLength(i).chain(*rule)
-    //             ));
-    //         }
+    auto const& baseRuns = my_rules::baseRuns;
+    std::vector<std::string> keys = {"l", "r", "w"};
+    std::vector<fusion::ExperimentRun> runs = {};
+    for (auto key : keys) {
+        for (auto const& run : baseRuns) {
+            runs.push_back(
+                fusion::ExperimentRun{
+                    .title = run.title,
+                    .userDefinedKey = fmt::format("{}-0", key),
+                    .rules = run.rules
+                }
+            );
+        }
 
-    //         runs.push_back(
-    //             fusion::ExperimentRun{
-    //                 .title = run.title,
-    //                 .userDefinedKey = fmt::format("{}", i),
-    //                 .rules = rules
-    //             }
-    //         );
-    //     }
-    // }
+        for (int i = 1; i <= 10; i++) {
+            for (auto const& run : baseRuns) {
+                std::unordered_set<fusion::FusionRulePtr> rules;
+                for (auto rule : run.rules) {
+                    if (key == "l") {
+                        rules.insert(std::make_shared<fusion::FusionRule>(
+                            fusion::maxLength(i).chain(*rule)
+                        ));
+                    } else if (key == "r") {
+                        rules.insert(std::make_shared<fusion::FusionRule>(
+                            fusion::maxReadPorts(i).chain(*rule)
+                        ));
+                    } else if (key == "w") {
+                        rules.insert(std::make_shared<fusion::FusionRule>(
+                            fusion::maxWritePorts(i).chain(*rule)
+                        ));
+                    }
+                }
+    
+                runs.push_back(
+                    fusion::ExperimentRun{
+                        .title = run.title,
+                        .userDefinedKey = fmt::format("{}-{}", key, i),
+                        .rules = rules
+                    }
+                );
+            }
+        }
+    }
 
     auto experimentManager = std::make_shared<fusion::ExperimentManager>(
+        "my rules, max length, max read, max write",
         fileNames,
         runs,
         resultsPath
@@ -77,18 +101,18 @@ int main(int argc, char const *argv[])
         <fusion::InstructionCountExperiment, fusion::FusionResults>(
             instructionCountResults
         );
-    // auto cycleCountResults = experimentManager->run
-    //     <fusion::PipelineExperiment<fusion::InOrderPipeline>,
-    //     fusion::PipelineResult>
-    //     (
-    //         instructionCountResults
-    //     );
-    // experimentManager->save
-    //     <fusion::PipelineExperiment<fusion::InOrderPipeline>,
-    //     fusion::PipelineResult>
-    //     (
-    //         cycleCountResults
-    //     );
+    auto cycleCountResults = experimentManager->run
+        <fusion::PipelineExperiment<fusion::InOrderPipeline>,
+        fusion::PipelineResult>
+        (
+            instructionCountResults
+        );
+    experimentManager->save
+        <fusion::PipelineExperiment<fusion::InOrderPipeline>,
+        fusion::PipelineResult>
+        (
+            cycleCountResults
+        );
     
     // auto simulationResults = experimentManager->run
     //     <fusion::SimulationExperiment, fusion::SimulationResults>();

@@ -80,33 +80,33 @@ const FusionRule contiguousMemory(
 );
 
 vector<ExperimentRun> baseRuns = {
-    ExperimentRun{
-        .title = "arithmetic only",
-        .userDefinedKey = "0",
-        .rules = unordered_set<FusionRulePtr>{
-            make_shared<FusionRule>(
-                sameCount.chain(arithmeticOnly)
-            )
-        }
-    },
-    ExperimentRun{
-        .title = "arithmetic end memory",
-        .userDefinedKey = "0",
-        .rules = unordered_set<FusionRulePtr>{
-            make_shared<FusionRule>(
-                sameCount.chain(arithmeticEndMemory)
-            )
-        }
-    },
-    ExperimentRun{
-        .title = "arithmetic end branch",
-        .userDefinedKey = "0",
-        .rules = unordered_set<FusionRulePtr>{
-            make_shared<FusionRule>(
-                sameCount.chain(arithmeticEndBranch)
-            )
-        }
-    },
+    // ExperimentRun{
+    //     .title = "arithmetic only",
+    //     .userDefinedKey = "0",
+    //     .rules = unordered_set<FusionRulePtr>{
+    //         make_shared<FusionRule>(
+    //             sameCount.chain(arithmeticOnly)
+    //         )
+    //     }
+    // },
+    // ExperimentRun{
+    //     .title = "arithmetic end memory",
+    //     .userDefinedKey = "0",
+    //     .rules = unordered_set<FusionRulePtr>{
+    //         make_shared<FusionRule>(
+    //             sameCount.chain(arithmeticEndMemory)
+    //         )
+    //     }
+    // },
+    // ExperimentRun{
+    //     .title = "arithmetic end branch",
+    //     .userDefinedKey = "0",
+    //     .rules = unordered_set<FusionRulePtr>{
+    //         make_shared<FusionRule>(
+    //             sameCount.chain(arithmeticEndBranch)
+    //         )
+    //     }
+    // },
     ExperimentRun{
         .title = "arithmetic end memory/branch",
         .userDefinedKey = "0",
@@ -118,63 +118,63 @@ vector<ExperimentRun> baseRuns = {
                 sameCount.chain(arithmeticEndBranch)
             )
         }
-    },
-    ExperimentRun{
-        .title = "arithmetic only (I)",
-        .userDefinedKey = "0",
-        .rules = unordered_set<FusionRulePtr>{
-            make_shared<FusionRule>(
-                independent
-                    .chain(sameCount)
-                    .chain(arithmeticOnly)
-            )
-        }
-    },
-    ExperimentRun{
-        .title = "arithmetic end memory (I)",
-        .userDefinedKey = "0",
-        .rules = unordered_set<FusionRulePtr>{
-            make_shared<FusionRule>(
-                independent
-                    .chain(sameCount)
-                    .chain(arithmeticEndMemory)
-            )
-        }
-    },
-    ExperimentRun{
-        .title = "arithmetic end branch (I)",
-        .userDefinedKey = "0",
-        .rules = unordered_set<FusionRulePtr>{
-            make_shared<FusionRule>(
-                independent
-                    .chain(sameCount)
-                    .chain(arithmeticEndBranch)
-            )
-        }
-    },
-    ExperimentRun{
-        .title = "arithmetic end memory/branch (I)",
-        .userDefinedKey = "0",
-        .rules = unordered_set<FusionRulePtr>{
-            make_shared<FusionRule>(
-                independent
-                    .chain(sameCount)
-                    .chain(arithmeticEndMemory)
-            ),
-            make_shared<FusionRule>(
-                independent
-                    .chain(sameCount)
-                    .chain(arithmeticEndBranch)
-            )
-        }
-    },
-    ExperimentRun{
-        .title = "fuse across branches",
-        .userDefinedKey = "0",
-        .rules = unordered_set<FusionRulePtr>{
-            make_shared<FusionRule>(acrossBranches)
-        }
     }
+    // ExperimentRun{
+    //     .title = "arithmetic only (I)",
+    //     .userDefinedKey = "0",
+    //     .rules = unordered_set<FusionRulePtr>{
+    //         make_shared<FusionRule>(
+    //             independent
+    //                 .chain(sameCount)
+    //                 .chain(arithmeticOnly)
+    //         )
+    //     }
+    // },
+    // ExperimentRun{
+    //     .title = "arithmetic end memory (I)",
+    //     .userDefinedKey = "0",
+    //     .rules = unordered_set<FusionRulePtr>{
+    //         make_shared<FusionRule>(
+    //             independent
+    //                 .chain(sameCount)
+    //                 .chain(arithmeticEndMemory)
+    //         )
+    //     }
+    // },
+    // ExperimentRun{
+    //     .title = "arithmetic end branch (I)",
+    //     .userDefinedKey = "0",
+    //     .rules = unordered_set<FusionRulePtr>{
+    //         make_shared<FusionRule>(
+    //             independent
+    //                 .chain(sameCount)
+    //                 .chain(arithmeticEndBranch)
+    //         )
+    //     }
+    // },
+    // ExperimentRun{
+    //     .title = "arithmetic end memory/branch (I)",
+    //     .userDefinedKey = "0",
+    //     .rules = unordered_set<FusionRulePtr>{
+    //         make_shared<FusionRule>(
+    //             independent
+    //                 .chain(sameCount)
+    //                 .chain(arithmeticEndMemory)
+    //         ),
+    //         make_shared<FusionRule>(
+    //             independent
+    //                 .chain(sameCount)
+    //                 .chain(arithmeticEndBranch)
+    //         )
+    //     }
+    // },
+    // ExperimentRun{
+    //     .title = "fuse across branches",
+    //     .userDefinedKey = "0",
+    //     .rules = unordered_set<FusionRulePtr>{
+    //         make_shared<FusionRule>(acrossBranches)
+    //     }
+    // }
 };
 
 } // my_rules

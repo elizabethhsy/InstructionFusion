@@ -80,6 +80,7 @@ struct FUSION_COMMON_EXPORT ExperimentManager :
     public enable_shared_from_this<ExperimentManager>
 {
     ExperimentManager(
+        string title,
         vector<string> filepaths,
         vector<ExperimentRun> const& runs,
         string resultsPath
@@ -101,7 +102,9 @@ struct FUSION_COMMON_EXPORT ExperimentManager :
     }
 
     void saveConfig();
+    void reportRunningStats();
 
+    string title;
     vector<shared_ptr<File>> files;
     vector<ExperimentRun> const& runs;
     string resultsPath;

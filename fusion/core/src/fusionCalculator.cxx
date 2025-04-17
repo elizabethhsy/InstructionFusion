@@ -4,6 +4,8 @@
 #include <utility>
 #include <unordered_set>
 
+#include <dataRepresentation.h>
+
 #include <boost/describe/enum.hpp>
 #include <boost/describe/enum_to_string.hpp>
 
@@ -11,6 +13,28 @@ namespace fusion
 {
 
 using namespace std;
+
+NumPorts NumPorts::numPorts(vector<shared_ptr<Instr>> const& block)
+{
+    unordered_set<Operand> read_operands;
+    unordered_set<Operand> write_operands;
+
+    // add the read operands to the set
+    for (auto instruction : block) {
+        for (int i = 0; i < instruction->operands.size(); i++) {
+            if (i == 0) { // destination register, it's a write port
+                write_operands.insert(instruction->operands[i]);
+            } else {
+                read_operands.insert(instruction->operands[i]);
+            }
+        }
+    }
+
+    return NumPorts{
+        .read = read_operands.size(),
+        .write = write_operands.size()
+    };
+}
 
 string FusionResults::toString() const
 {
@@ -63,6 +87,10 @@ FusionResults FusionCalculator::calculateFusion(
     uint64_t dynamicCount = file->instructions[0].count;
     auto tempRules = run.rules;
 
+    // calculate the number of read and write ports
+    map<uint64_t, uint64_t> numReadPorts;
+    map<uint64_t, uint64_t> numWritePorts;
+
     // keep track of results
     uint64_t instructionsAfterFuse = 0;
     vector<pair<uint64_t, uint64_t>> fusionLengths;
@@ -86,6 +114,12 @@ FusionResults FusionCalculator::calculateFusion(
         instructionsAfterFuse += count;
         fusionLengths.push_back(make_pair(count, currBlock.size()));
 
+        for (auto instruction : currBlock) {
+            auto numPorts = NumPorts::numPorts(currBlock);
+            numReadPorts[numPorts.read] += count;
+            numWritePorts[numPorts.write] += count;   
+        }
+
         currBlock.clear();
     };
 
@@ -103,12 +137,12 @@ FusionResults FusionCalculator::calculateFusion(
         auto rules = tempRules;
         for (auto fun : rules) {
             auto result = fun->apply(currBlock, instruction);
-            // LOG_DEBUG(
-            //     fmt::format(
-            //         "FusableResult type of {}",
-            //         boost::describe::enum_to_string(result, "unknown")
-            //     )
-            // );
+            LOG_DEBUG(
+                fmt::format(
+                    "FusableResult type of {}",
+                    boost::describe::enum_to_string(result, "unknown")
+                )
+            );
             switch (result) {
                 case FusableResult::FUSABLE:
                 {
@@ -188,7 +222,9 @@ FusionResults FusionCalculator::calculateFusion(
         .fusedPercentage = fusedPercentage,
         .fusedBlocks = std::move(fusedBlocks),
         .fusionLengths = std::move(fusionLengths),
-        .avgFusionLength = calcAvgFusionLength(fusionLengths)
+        .avgFusionLength = calcAvgFusionLength(fusionLengths),
+        .numReadPorts = std::move(numReadPorts),
+        .numWritePorts = std::move(numWritePorts)
     };
 }
 

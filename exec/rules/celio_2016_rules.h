@@ -4,6 +4,7 @@
 #include <exampleRules.h>
 #include <experiment.h>
 #include <fusion.h>
+#include <instructions.h>
 #include <macros.h>
 
 #include <string>
@@ -71,15 +72,15 @@ const FusionRule loadEffectiveAddress(
         }
 
         // match cincoffset instruction
-        // if (block.size() == 1 && instruction.instr == "cincoffset") {
-        //     auto const& slli = block.back();
-        //     auto const& ops = instruction.operands;
-        //     if (ops.size() == 3 && ops[0] == ops[1] &&
-        //         ops[2] == slli->operands[0])
-        //     {
-        //         return FusableResult::END_OF_FUSABLE;
-        //     }
-        // }
+        if (block.size() == 1 && instruction.instr == "cincoffset") {
+            auto const& slli = block.back();
+            auto const& ops = instruction.operands;
+            if (ops.size() == 3 && ops[0] == ops[1] &&
+                ops[2] == slli->operands[0])
+            {
+                return FusableResult::END_OF_FUSABLE;
+            }
+        }
         
         return FusableResult::NOT_FUSABLE;
     }
@@ -95,13 +96,19 @@ const FusionRule indexedLoad(
         {
             return FusableResult::START_OF_FUSABLE;
         }
+
+        auto zero_offset = [&](Operand op1, Operand op2) -> bool {
+            return op1.op == fmt::format("0({})", op2.op) ||
+                op1.op == fmt::format("0(c{})", op2.op); // capability register
+        };
         
         // match cld instruction
-        if (block.size() == 1 && instruction.instr == "cld") {
+        if (block.size() == 1 && loadInstructions.contains(instruction.instr)) {
             auto const& cincoffset = block.back();
             auto const& ops = instruction.operands;
-            if (ops.size() == 2) {
-                if (ops[1].op.contains(cincoffset->operands[0].op)) {
+            if (ops.size() == 2 && zero_offset(ops[1], ops[0])) {
+                if (zero_offset(ops[1], cincoffset->operands[0]))
+                {
                     return FusableResult::END_OF_FUSABLE;
                 }
             }
@@ -257,15 +264,15 @@ std::vector<fusion::ExperimentRun> baseRuns = {
             std::make_shared<fusion::FusionRule>(
                 fusion::sameCount.chain(indexedLoad)
             ),
-            std::make_shared<fusion::FusionRule>(
-                fusion::sameCount.chain(fusedIndexedLoad)
-            ),
+            // std::make_shared<fusion::FusionRule>(
+            //     fusion::sameCount.chain(fusedIndexedLoad)
+            // ),
             std::make_shared<fusion::FusionRule>(
                 fusion::sameCount.chain(clearUpperWord)
-            ),
-            std::make_shared<fusion::FusionRule>(
-                fusion::sameCount.chain(loadGlobal)
             )
+            // std::make_shared<fusion::FusionRule>(
+            //     fusion::sameCount.chain(loadGlobal)
+            // )
         }
     }
 };
