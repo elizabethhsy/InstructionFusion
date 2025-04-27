@@ -1,20 +1,29 @@
 #pragma once
 
-#include <csvHandler.h>
+#include <fileHandler.h>
 #include <exampleRules.h>
 #include <experiment.h>
 #include <fusion.h>
+#include <instructions.h>
 #include <macros.h>
 
 #include <string>
 #include <unordered_set>
 #include <vector>
 
-namespace celio_2016
+namespace celio_2016_rules
 {
 
 using namespace fusion;
 using namespace std;
+
+bool zeroOffset(Operand op1, Operand op2)
+{
+    return op1.op == fmt::format("0({})", op2.op)
+        || op1.op == fmt::format("0(c{})", op2.op)
+        || op1 == op2
+        || op1.op == fmt::format("c{}", op2.op); // capability register
+};
 
 // slli rd, rs1, {1,2,3}
 // add  rd, rd, rs2 --> cincoffset
@@ -24,7 +33,7 @@ const FusionRule loadEffectiveAddress(
         if (instruction.instr == "slli") {
             auto const& ops = instruction.operands;
             unordered_set<string> possibleValues = { "1", "2", "3" };
-            if (ops.size() == 3 && possibleValues.contains(ops[2])) {
+            if (ops.size() == 3 && possibleValues.contains(ops[2].op)) {
                 return FusableResult::START_OF_FUSABLE;
             }
         }
@@ -33,17 +42,22 @@ const FusionRule loadEffectiveAddress(
         if (instruction.instr == "c.slli") {
             auto const& ops = instruction.operands;
             unordered_set<string> possibleValues = { "1", "2", "3" };
-            if (ops.size() == 2 && possibleValues.contains(ops[1])) {
+            if (ops.size() == 2 && possibleValues.contains(ops[1].op)) {
                 return FusableResult::START_OF_FUSABLE;
             }
         }
+
+        auto match_one_of = [&](Operand match, Operand op1, Operand op2) -> bool
+        {
+            return zeroOffset(match, op1) || zeroOffset(match, op2);
+        };
 
         // match add instruction
         if (block.size() == 1 && instruction.instr == "add") {
             auto const& slli = block.back();
             auto const& ops = instruction.operands;
-            if (ops.size() == 3 && ops[0] == ops[1] &&
-                ops[0] == slli->operands[0])
+            if (ops.size() == 3 && match_one_of(ops[0], ops[1], ops[2]) &&
+                match_one_of(slli->operands[0], ops[1], ops[2]))
             {
                 return FusableResult::END_OF_FUSABLE;
             }
@@ -53,7 +67,7 @@ const FusionRule loadEffectiveAddress(
         if (block.size() == 1 && instruction.instr == "c.add") {
             auto const& slli = block.back();
             auto const& ops = instruction.operands;
-            if (ops.size() == 2 && ops[0] == slli->operands[0])
+            if (ops.size() == 2 && match_one_of(slli->operands[0], ops[0], ops[1]))
             {
                 return FusableResult::END_OF_FUSABLE;
             }
@@ -63,8 +77,8 @@ const FusionRule loadEffectiveAddress(
         if (block.size() == 1 && instruction.instr == "addi") {
             auto const& slli = block.back();
             auto const& ops = instruction.operands;
-            if (ops.size() == 3 && ops[0] == ops[1] &&
-                ops[0] == slli->operands[0])
+            if (ops.size() == 3 && match_one_of(ops[0], ops[1], ops[2]) &&
+                match_one_of(slli->operands[0], ops[1], ops[2]))
             {
                 return FusableResult::END_OF_FUSABLE;
             }
@@ -74,8 +88,8 @@ const FusionRule loadEffectiveAddress(
         if (block.size() == 1 && instruction.instr == "cincoffset") {
             auto const& slli = block.back();
             auto const& ops = instruction.operands;
-            if (ops.size() == 3 && ops[0] == ops[1] &&
-                ops[2] == slli->operands[0])
+            if (ops.size() == 3 && match_one_of(ops[0], ops[1], ops[2]) &&
+                match_one_of(slli->operands[0], ops[1], ops[2]))
             {
                 return FusableResult::END_OF_FUSABLE;
             }
@@ -96,12 +110,13 @@ const FusionRule indexedLoad(
             return FusableResult::START_OF_FUSABLE;
         }
         
-        // match cld instruction
-        if (block.size() == 1 && instruction.instr == "cld") {
+        // match load instruction
+        if (block.size() == 1 && loadInstructions.contains(instruction.instr)) {
             auto const& cincoffset = block.back();
             auto const& ops = instruction.operands;
-            if (ops.size() == 2) {
-                if (ops[1].contains(cincoffset->operands[0])) {
+            if (ops.size() == 2 && zeroOffset(ops[1], ops[0])) {
+                if (zeroOffset(cincoffset->operands[0], ops[0]))
+                {
                     return FusableResult::END_OF_FUSABLE;
                 }
             }
@@ -131,13 +146,13 @@ const FusionRule fusedIndexedLoad(
 );
 
 // slli rd, rs1, 32
-// srli, rd, rd, {29, 30, 31, 32}
+// srli rd, rd, {29, 30, 31, 32}
 const FusionRule clearUpperWord(
     [](vector<shared_ptr<Instr>> const& block, Instr const& instruction) {
         // match slli instruction
         if (instruction.instr == "slli") {
             auto const& ops = instruction.operands;
-            if (ops.size() == 3 && ops[2] == "32") {
+            if (ops.size() == 3 && ops[2].op == "32") {
                 return FusableResult::START_OF_FUSABLE;
             }
         }
@@ -152,8 +167,8 @@ const FusionRule clearUpperWord(
         if (block.size() == 1 && instruction.instr == "srli") {
             auto const& slli = block.back();
             auto const& ops = instruction.operands;
-            if (ops.size() == 3 && //ops[0] == ops[1] &&
-                possibleValues.contains(ops[2]) &&
+            if (ops.size() == 3 && ops[0] == ops[1] &&
+                possibleValues.contains(ops[2].op) &&
                 ops[1] == slli->operands[0])
             {
                 return FusableResult::END_OF_FUSABLE;
@@ -164,7 +179,7 @@ const FusionRule clearUpperWord(
         if (block.size() == 1 && instruction.instr == "c.srli") {
             auto const& slli = block.back();
             auto const& ops = instruction.operands;
-            if (ops.size() == 2 && possibleValues.contains(ops[1]) &&
+            if (ops.size() == 2 && possibleValues.contains(ops[1].op) &&
                 ops[0] == slli->operands[0])
             {
                 return FusableResult::END_OF_FUSABLE;
@@ -190,7 +205,7 @@ const FusionRule loadGlobal(
         if (block.size() == 1 && instruction.instr == "clc") {
             auto const& auipcc = block.back();
             auto const& ops = instruction.operands;
-            if (ops.size() == 2 && ops[1].contains(ops[0]) &&
+            if (ops.size() == 2 && ops[1].op.contains(ops[0].op) &&
                 ops[0] == auipcc->operands[0])
             {
                 return FusableResult::END_OF_FUSABLE;
@@ -220,15 +235,15 @@ std::vector<fusion::ExperimentRun> baseRuns = {
             )
         }
     },
-    // fusion::ExperimentRun{
-    //     .title = "fused indexed load",
-    //     .userDefinedKey = "0",
-    //     .rules = std::unordered_set<fusion::FusionRulePtr>{
-    //         std::make_shared<fusion::FusionRule>(
-    //             fusion::sameCount.chain(fusedIndexedLoad)
-    //         )
-    //     }
-    // },
+    fusion::ExperimentRun{
+        .title = "fused indexed load",
+        .userDefinedKey = "0",
+        .rules = std::unordered_set<fusion::FusionRulePtr>{
+            std::make_shared<fusion::FusionRule>(
+                fusion::sameCount.chain(fusedIndexedLoad)
+            )
+        }
+    },
     fusion::ExperimentRun{
         .title = "clear upper word",
         .userDefinedKey = "0",
@@ -238,15 +253,15 @@ std::vector<fusion::ExperimentRun> baseRuns = {
             )
         }
     },
-    // fusion::ExperimentRun{
-    //     .title = "load global",
-    //     .userDefinedKey = "0",
-    //     .rules = std::unordered_set<fusion::FusionRulePtr>{
-    //         std::make_shared<fusion::FusionRule>(
-    //             fusion::sameCount.chain(loadGlobal)
-    //         )
-    //     }
-    // },
+    fusion::ExperimentRun{
+        .title = "load global",
+        .userDefinedKey = "0",
+        .rules = std::unordered_set<fusion::FusionRulePtr>{
+            std::make_shared<fusion::FusionRule>(
+                fusion::sameCount.chain(loadGlobal)
+            )
+        }
+    },
     fusion::ExperimentRun{
         .title = "overall results",
         .userDefinedKey = "0",
@@ -257,15 +272,15 @@ std::vector<fusion::ExperimentRun> baseRuns = {
             std::make_shared<fusion::FusionRule>(
                 fusion::sameCount.chain(indexedLoad)
             ),
-            // std::make_shared<fusion::FusionRule>(
-            //     fusion::sameCount.chain(fusedIndexedLoad)
-            // ),
+            std::make_shared<fusion::FusionRule>(
+                fusion::sameCount.chain(fusedIndexedLoad)
+            ),
             std::make_shared<fusion::FusionRule>(
                 fusion::sameCount.chain(clearUpperWord)
             ),
-            // std::make_shared<fusion::FusionRule>(
-            //     fusion::sameCount.chain(loadGlobal)
-            // )
+            std::make_shared<fusion::FusionRule>(
+                fusion::sameCount.chain(loadGlobal)
+            )
         }
     }
 };

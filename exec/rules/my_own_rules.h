@@ -53,7 +53,29 @@ const FusionRule acrossBranches(
         if (branchInstructions.contains(instruction.instr)) {
             return FusableResult::FUSABLE;
         }
-        return arithmeticEndMemory.apply(block, instruction);
+        return sameCount.chain(arithmeticEndMemory).apply(block, instruction);
+    }
+);
+
+const FusionRule contiguousMemory(
+    [](vector<shared_ptr<Instr>> const& block, Instr const& instruction)
+        -> FusableResult
+    {
+        auto is_contiguous = [&](Instr const& prev, Instr const& next)
+        {
+            if (!loadInstructions.contains(prev.instr) ||
+                !loadInstructions.contains(next.instr))
+            {
+                return false;
+            }
+            // TODO: implement logic
+            return true;
+        };
+
+        if (is_contiguous(*block.back(), instruction)) {
+            return FusableResult::FUSABLE;
+        }
+        return FusableResult::NOT_FUSABLE;
     }
 );
 
@@ -85,18 +107,18 @@ vector<ExperimentRun> baseRuns = {
     //         )
     //     }
     // },
-    // ExperimentRun{
-    //     .title = "arithmetic end memory/branch",
-    //     .userDefinedKey = "0",
-    //     .rules = unordered_set<FusionRulePtr>{
-    //         make_shared<FusionRule>(
-    //             sameCount.chain(arithmeticEndMemory)
-    //         ),
-    //         make_shared<FusionRule>(
-    //             sameCount.chain(arithmeticEndBranch)
-    //         )
-    //     }
-    // },
+    ExperimentRun{
+        .title = "arithmetic end memory/branch",
+        .userDefinedKey = "0",
+        .rules = unordered_set<FusionRulePtr>{
+            make_shared<FusionRule>(
+                sameCount.chain(arithmeticEndMemory)
+            ),
+            make_shared<FusionRule>(
+                sameCount.chain(arithmeticEndBranch)
+            )
+        }
+    }
     // ExperimentRun{
     //     .title = "arithmetic only (I)",
     //     .userDefinedKey = "0",
@@ -152,28 +174,7 @@ vector<ExperimentRun> baseRuns = {
     //     .rules = unordered_set<FusionRulePtr>{
     //         make_shared<FusionRule>(acrossBranches)
     //     }
-    // },
-    // ExperimentRun{
-    //     .title = "same count",
-    //     .userDefinedKey = "0",
-    //     .rules = unordered_set<FusionRulePtr>{
-    //         make_shared<FusionRule>(sameCount)
-    //     }
-    // },
-    // ExperimentRun{
-    //     .title = "similar count",
-    //     .userDefinedKey = "0",
-    //     .rules = unordered_set<FusionRulePtr>{
-    //         make_shared<FusionRule>(similarCount(1))
-    //     }
-    // },
-    ExperimentRun{
-        .title = "always fusable",
-        .userDefinedKey = "0",
-        .rules = unordered_set<FusionRulePtr>{
-            make_shared<FusionRule>(alwaysFusable)
-        }
-    }
+    // }
 };
 
 } // my_rules

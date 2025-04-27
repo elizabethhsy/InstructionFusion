@@ -30,11 +30,17 @@ const unordered_set<string> arithmeticInstructions = {
 };
 
 const unordered_set<string> branchInstructions = {
-    "beq", "beqz", "bge", "bgeu", "bgez", "bgtz", "blez", "blt", "bltu", "bltz", "bne", "bnez",
-    "c.beqz", "c.bnez", "cjal", "cjalr", "j", "jalr", "jr", "ret"
+    "beq", "beqz", "bge", "bgeu", "bgez", "bgtz", "blez", "blt", "bltu", "bltz",
+    "bne", "bnez", "c.beqz", "c.bnez", "cjal", "cjalr", "j", "jalr", "jr", "ret"
 };
 
 const unordered_set<string> memoryInstructions = {
+    "c.li", "c.lui", "cfld", "cflw", "cfsd", "cfsw", "clb", "clbu", "clc", "cld",
+    "clh", "clhu", "clr.b.aq", "clr.w.aqrl", "clw", "clwu", "crrl", "csb", "csc",
+    "csc.b", "csc.w.aqrl", "csd", "csh", "csw", "lui"
+};
+
+const unordered_set<string> loadInstructions = {
     "c.li", "c.lui", "cfld", "cflw", "cfsd", "cfsw", "clb", "clbu", "clc", "cld",
     "clh", "clhu", "clr.b.aq", "clr.w.aqrl", "clw", "clwu", "crrl", "csb", "csc",
     "csc.b", "csc.w.aqrl", "csd", "csh", "csw", "lui"

@@ -4,6 +4,8 @@
 #include <utility>
 #include <unordered_set>
 
+#include <dataRepresentation.h>
+
 #include <boost/describe/enum.hpp>
 #include <boost/describe/enum_to_string.hpp>
 
@@ -12,6 +14,28 @@ namespace fusion
 
 using namespace std;
 
+NumPorts NumPorts::numPorts(vector<shared_ptr<Instr>> const& block)
+{
+    unordered_set<Operand> read_operands;
+    unordered_set<Operand> write_operands;
+
+    // add the read operands to the set
+    for (auto instruction : block) {
+        for (int i = 0; i < instruction->operands.size(); i++) {
+            if (i == 0) { // destination register, it's a write port
+                write_operands.insert(instruction->operands[i]);
+            } else {
+                read_operands.insert(instruction->operands[i]);
+            }
+        }
+    }
+
+    return NumPorts{
+        .read = read_operands.size(),
+        .write = write_operands.size()
+    };
+}
+
 string FusionResults::toString() const
 {
     return fmt::format(
@@ -19,7 +43,7 @@ string FusionResults::toString() const
         "total_instructions={}, "
         "instructions_after_fuse={}, fused_instructions={}, avg_fusion_length="
         "{}, fused_percentage={}",
-        file.fileName,
+        file->fileName,
         totalInstructions,
         instructionsAfterFuse,
         fusedInstructions,
@@ -33,21 +57,21 @@ float FusionCalculator::calcAvgFusionLength(
 )
 {
     double avgLength = 0;
-    uint64_t totalCount = 0;
+    uint64_t totalCycles = 0;
 
     for (auto block : fusionLengths) {
         auto const& count = block.first;
         auto const& length = block.second;
 
         avgLength += count*length;
-        totalCount += count;
+        totalCycles += count;
     }
-    avgLength = double(avgLength)/totalCount;
+    avgLength = double(avgLength)/totalCycles;
     return avgLength;
 }
 
 FusionResults FusionCalculator::calculateFusion(
-    File const& file,
+    shared_ptr<File> file,
     ExperimentRun const& run)
 {
     LOG_DEBUG(
@@ -58,10 +82,14 @@ FusionResults FusionCalculator::calculateFusion(
         )
     );
 
+    vector<FusedBlock> fusedBlocks;
     vector<shared_ptr<Instr>> currBlock;
-    auto const& rules = run.rules;
-    uint64_t dynamicCount = file.instructions[0].count;
-    auto tempRules = rules;
+    uint64_t dynamicCount = file->instructions[0].count;
+    auto tempRules = run.rules;
+
+    // calculate the number of read and write ports
+    map<uint64_t, uint64_t> numReadPorts;
+    map<uint64_t, uint64_t> numWritePorts;
 
     // keep track of results
     uint64_t instructionsAfterFuse = 0;
@@ -70,21 +98,34 @@ FusionResults FusionCalculator::calculateFusion(
 
     // record the results, and start a new round
     auto new_round = [&](uint64_t count) {
+        tempRules = run.rules;
+        startOfBlock = true;
+
         if (currBlock.size() == 0) return;
 
         // record the results
+        auto const& first = currBlock[0];
+        fusedBlocks.emplace_back(FusedBlock(
+            first->label,
+            first->addr,
+            count,
+            currBlock
+        ));
         instructionsAfterFuse += count;
         fusionLengths.push_back(make_pair(count, currBlock.size()));
 
-        // reset the tracking variables
+        for (auto instruction : currBlock) {
+            auto numPorts = NumPorts::numPorts(currBlock);
+            numReadPorts[numPorts.read] += count;
+            numWritePorts[numPorts.write] += count;   
+        }
+
         currBlock.clear();
-        tempRules = rules;
-        startOfBlock = true;
     };
 
     // iterate through every instruction. For each instruction, we iterate over
     // all the functions that are still in contention.
-    for (auto const& instruction : file.instructions) {
+    for (auto const& instruction : file->instructions) {
         bool endOfFusable = false;
         bool startOfFusable = false;
 
@@ -93,6 +134,7 @@ FusionResults FusionCalculator::calculateFusion(
             startOfBlock = false;
         }
 
+        auto rules = tempRules;
         for (auto fun : rules) {
             auto result = fun->apply(currBlock, instruction);
             LOG_DEBUG(
@@ -151,6 +193,7 @@ FusionResults FusionCalculator::calculateFusion(
                 new_round(dynamicCount);
                 currBlock.push_back(make_shared<Instr>(instruction));
                 dynamicCount = instruction.count;
+                startOfBlock = false;
             } else { // NOT_FUSABLE
                 new_round(dynamicCount);
                 dynamicCount = instruction.count;
@@ -165,7 +208,7 @@ FusionResults FusionCalculator::calculateFusion(
     new_round(dynamicCount); // wrap up the final block
 
     // calculate stats
-    auto totalInstructions = file.stats->totalInstructionNum;
+    auto totalInstructions = file->stats->totalInstructionNum;
     assert(totalInstructions >= instructionsAfterFuse);
     auto fusedInstructions = totalInstructions - instructionsAfterFuse;
     auto fusedPercentage = 100*(fusedInstructions)/double(totalInstructions);
@@ -177,8 +220,11 @@ FusionResults FusionCalculator::calculateFusion(
         .instructionsAfterFuse = instructionsAfterFuse,
         .fusedInstructions = fusedInstructions,
         .fusedPercentage = fusedPercentage,
-        .fusionLengths = fusionLengths,
-        .avgFusionLength = calcAvgFusionLength(fusionLengths)
+        .fusedBlocks = std::move(fusedBlocks),
+        .fusionLengths = std::move(fusionLengths),
+        .avgFusionLength = calcAvgFusionLength(fusionLengths),
+        .numReadPorts = std::move(numReadPorts),
+        .numWritePorts = std::move(numWritePorts)
     };
 }
 

@@ -1,13 +1,14 @@
 #include "rules/celio_2016_rules.h"
 #include "rules/my_own_rules.h"
 
-#include <csvHandler.h>
+#include <fileHandler.h>
 #include <exampleRules.h>
 #include <experiment.h>
 #include <fusion.h>
 #include <instructionCount.h>
 #include <instructions.h>
 #include <simulationExperiment.h>
+#include <inOrderPipeline.h>
 
 #include <chrono>
 #include <fmt/core.h>
@@ -43,37 +44,76 @@ int main(int argc, char const *argv[])
         name = fmt::format("{}/{}.csv", dirPath, name);
     }
 
-    auto const& baseRuns = my_rules::baseRuns;
+    auto const& baseRuns = celio_2016_rules::baseRuns;
     std::vector<fusion::ExperimentRun> runs = baseRuns;
-    for (int i = 1; i <= 100; i++) {
-        for (auto const& run : baseRuns) {
-            std::unordered_set<fusion::FusionRulePtr> rules;
-            for (auto rule : run.rules) {
-                rules.insert(std::make_shared<fusion::FusionRule>(
-                    fusion::maxLength(i).chain(*rule)
-                ));
-            }
+    
+    // std::vector<std::string> keys = {"l", "r", "w"};
+    // std::vector<fusion::ExperimentRun> runs = {};
+    // for (auto key : keys) {
+    //     for (auto const& run : baseRuns) {
+    //         runs.push_back(
+    //             fusion::ExperimentRun{
+    //                 .title = run.title,
+    //                 .userDefinedKey = fmt::format("{}-0", key),
+    //                 .rules = run.rules
+    //             }
+    //         );
+    //     }
 
-            runs.push_back(
-                fusion::ExperimentRun{
-                    .title = run.title,
-                    .userDefinedKey = fmt::format("{}", i),
-                    .rules = rules
-                }
-            );
-        }
-    }
+    //     for (int i = 1; i <= 10; i++) {
+    //         for (auto const& run : baseRuns) {
+    //             std::unordered_set<fusion::FusionRulePtr> rules;
+    //             for (auto rule : run.rules) {
+    //                 if (key == "l") {
+    //                     rules.insert(std::make_shared<fusion::FusionRule>(
+    //                         fusion::maxLength(i).chain(*rule)
+    //                     ));
+    //                 } else if (key == "r") {
+    //                     rules.insert(std::make_shared<fusion::FusionRule>(
+    //                         fusion::maxReadPorts(i).chain(*rule)
+    //                     ));
+    //                 } else if (key == "w") {
+    //                     rules.insert(std::make_shared<fusion::FusionRule>(
+    //                         fusion::maxWritePorts(i).chain(*rule)
+    //                     ));
+    //                 }
+    //             }
+    
+    //             runs.push_back(
+    //                 fusion::ExperimentRun{
+    //                     .title = run.title,
+    //                     .userDefinedKey = fmt::format("{}-{}", key, i),
+    //                     .rules = rules
+    //                 }
+    //             );
+    //         }
+    //     }
+    // }
 
     auto experimentManager = std::make_shared<fusion::ExperimentManager>(
+        "celio 2016 rules",
         fileNames,
-        runs
+        runs,
+        resultsPath
     );
     auto instructionCountResults = experimentManager->run
-        <fusion::InstructionCountExperiment, fusion::InstructionCountResults>();
+        <fusion::InstructionCountExperiment, fusion::FusionResults>
+        ();
     experimentManager->save
-        <fusion::InstructionCountExperiment, fusion::InstructionCountResults>(
-            instructionCountResults,
-            resultsPath
+        <fusion::InstructionCountExperiment, fusion::FusionResults>(
+            instructionCountResults
+        );
+    auto cycleCountResults = experimentManager->run
+        <fusion::PipelineExperiment<fusion::InOrderPipeline>,
+        fusion::PipelineResult>
+        (
+            instructionCountResults
+        );
+    experimentManager->save
+        <fusion::PipelineExperiment<fusion::InOrderPipeline>,
+        fusion::PipelineResult>
+        (
+            cycleCountResults
         );
     
     // auto simulationResults = experimentManager->run

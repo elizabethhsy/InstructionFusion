@@ -7,6 +7,7 @@
 #include <macros.h>
 
 #include <functional>
+#include <map>
 #include <memory>
 #include <vector>
 #include <string>
@@ -21,17 +22,30 @@ namespace fusion
 
 using namespace std;
 
+struct FUSION_CORE_NO_EXPORT NumPorts
+{
+    uint64_t read;
+    uint64_t write;
+
+    static NumPorts numPorts(vector<shared_ptr<Instr>> const& block);
+};
+
 struct FUSION_CORE_NO_EXPORT FusionResults
 {
-    File const& file;
+    shared_ptr<File> file;
     ExperimentRun const& run;
 
     uint64_t totalInstructions;
     uint64_t instructionsAfterFuse;
     uint64_t fusedInstructions;
+    vector<FusedBlock> fusedBlocks;
     vector<pair<uint64_t, uint64_t>> fusionLengths; // count, block length
     double avgFusionLength;
     double fusedPercentage;
+
+    // number of ports -> dynamic count
+    map<uint64_t, uint64_t> numReadPorts;
+    map<uint64_t, uint64_t> numWritePorts;
     
     string toString() const;
 };
@@ -39,7 +53,7 @@ struct FUSION_CORE_NO_EXPORT FusionResults
 struct FUSION_CORE_NO_EXPORT FusionCalculator
 {
     FusionResults calculateFusion(
-        File const& file,
+        shared_ptr<File> file,
         ExperimentRun const& run
     );
 

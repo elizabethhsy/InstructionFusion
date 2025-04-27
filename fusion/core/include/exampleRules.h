@@ -1,5 +1,6 @@
 #pragma once
 
+#include "fusionCalculator.h"
 #include <fusion_core_export.h>
 
 #include <dataRepresentation.h>
@@ -67,6 +68,38 @@ FusionRule FUSION_CORE_EXPORT maxLength(int length) {
                 FusableResult::NOT_FUSABLE;
         });
 };
+
+FusionRule FUSION_CORE_EXPORT maxReadPorts(int num) {
+    return FusionRule(
+        [num](
+            vector<shared_ptr<Instr>> const& block,
+            Instr const& instruction
+        ) -> FusableResult
+        {
+            vector<shared_ptr<Instr>> copy = block;
+            copy.push_back(make_shared<Instr>(instruction));
+            auto ports = NumPorts::numPorts(copy);
+            return (ports.read <= num) ? FusableResult::FUSABLE :
+                FusableResult::NOT_FUSABLE;
+        }
+    );
+}
+
+FusionRule FUSION_CORE_EXPORT maxWritePorts(int num) {
+    return FusionRule(
+        [num](
+            vector<shared_ptr<Instr>> const& block,
+            Instr const& instruction
+        ) -> FusableResult
+        {
+            auto copy = block;
+            copy.push_back(make_shared<Instr>(instruction));
+            auto ports = NumPorts::numPorts(copy);
+            return (ports.write <= num) ? FusableResult::FUSABLE :
+                FusableResult::NOT_FUSABLE;
+        }
+    );
+}
 
 FusionRule FUSION_CORE_EXPORT independent(
     [](vector<shared_ptr<Instr>> const& block, Instr const& instruction)
