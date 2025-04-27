@@ -1,7 +1,7 @@
 #include "instructionCount.h"
 #include "fusion.h"
 
-#include <csvHandler.h>
+#include <fileHandler.h>
 #include <instructions.h>
 #include <macros.h>
 
@@ -10,23 +10,23 @@ namespace fusion
 
 using namespace std;
 
-InstructionCountResults InstructionCountExperiment::run()
+ExperimentResults<FusionResults> InstructionCountExperiment::run()
 {
     FusionCalculator calculator;
-    vector<InstructionCountRunResults> runResults;
+    vector<RunResult<FusionResults>> runResults;
     
     auto run_experiment = [&](ExperimentRun const& run) {
         vector<FusionResults> results;
         // collect aggregate results across all files for each run
         FusionResults aggregateResults{
-            .file = *(manager->files)[0],
+            .file = (manager->files)[0],
             .run = run
         };
 
         LOG_INFO(fmt::format("{} ({})", run.title, run.userDefinedKey));
         for (auto const& file : manager->files) {
             FusionResults result = calculator.calculateFusion(
-                *file,
+                file,
                 run
             );
 
@@ -58,6 +58,12 @@ InstructionCountResults InstructionCountExperiment::run()
                 res.fusionLengths.begin(),
                 res.fusionLengths.end()
             );
+            for (auto const& [numPorts, count] : res.numReadPorts) {
+                aggregateResults.numReadPorts[numPorts] += count;
+            }
+            for (auto const& [numPorts, count] : res.numWritePorts) {
+                aggregateResults.numWritePorts[numPorts] += count;
+            }
         }
         aggregateResults.avgFusionLength =
             FusionCalculator::calcAvgFusionLength(
@@ -68,49 +74,58 @@ InstructionCountResults InstructionCountExperiment::run()
             double(aggregateResults.totalInstructions);
         
         // add run results to the overall experiment results vector
-        runResults.push_back(InstructionCountRunResults{
-            .run = run,
-            .fusionResults = results,
-            .aggregateResults = aggregateResults
-        });
+        runResults.push_back(
+            RunResult<FusionResults>(
+                run,
+                std::move(results),
+                std::move(aggregateResults)
+            )
+        );
     };
 
     for (auto const& run : manager->runs) {
         run_experiment(run);
     }
 
-    return InstructionCountResults{
+    return ExperimentResults<FusionResults>{
         .runResults = std::move(runResults)
     };
 }
 
 void InstructionCountExperiment::save(
-    InstructionCountResults const& results,
-    string resultsPath
+    ExperimentResults<FusionResults> const& results
 )
 {
-    CSVWriter aggregateWriter(resultsPath + "/aggregate.csv");
-    CSVWriter overviewWriter(resultsPath + "/overview.csv");
-    CSVWriter fusionLengthsWriter(resultsPath + "/fusionLengths.csv");
+    auto resultsPath = manager->resultsPath;
+    FileWriter aggregateWriter(resultsPath + "/aggregate.csv");
+    FileWriter overviewWriter(resultsPath + "/overview.csv");
+
+    FileWriter fusionLengthsWriter(resultsPath + "/fusionLengths.csv");
+    FileWriter numReadPortsWriter(resultsPath + "/numReadPorts.csv");
+    FileWriter numWritePortsWriter(resultsPath + "/numWritePorts.csv");
 
     aggregateWriter.writeLine("rule_title,rule_description,user_defined_key,"
         "total_instructions,instructions_after_fuse,instructions_fused,"
         "percentage_fused,average_fusion_length");
-    overviewWriter.writeLine("rule_title,rule_description,user_defined_key,file,"
-        "total_instructions,instructions_after_fuse,instructions_fused,"
+    overviewWriter.writeLine("rule_title,rule_description,user_defined_key,"
+        "file,total_instructions,instructions_after_fuse,instructions_fused,"
         "percentage_fused,average_fusion_length");
-    fusionLengthsWriter.writeLine("rule_title,rule_description,user_defined_key,file,"
-        "count,fusion_length");
+    fusionLengthsWriter.writeLine("rule_title,rule_description,"
+        "user_defined_key,file,count,fusion_length");
+    numReadPortsWriter.writeLine("rule_title,rule_description,user_defined_key,"
+        "file,num_read_ports,count");
+    numWritePortsWriter.writeLine("rule_title,rule_description,user_defined_key,"
+        "file,num_write_ports,count");
     
     for (auto const& run : results.runResults) {
-        for (auto const& res : run.fusionResults) {
+        for (auto const& res : run.results) {
             overviewWriter.writeLine(
                 fmt::format(
                     "{},{},{},{},{},{},{},{},{}",
                     res.run.title,
                     res.run.description,
                     res.run.userDefinedKey,
-                    res.file.fileName,
+                    res.file->fileName,
                     res.totalInstructions,
                     res.instructionsAfterFuse,
                     res.fusedInstructions,
@@ -136,7 +151,7 @@ void InstructionCountExperiment::save(
     }
 
     for (auto const& run : results.runResults) {
-        for (auto const& res : run.fusionResults) {
+        for (auto const& res : run.results) {
             for (auto const& pair : res.fusionLengths) { // pair of count, length
                 fusionLengthsWriter.writeLine(
                     fmt::format(
@@ -144,9 +159,37 @@ void InstructionCountExperiment::save(
                         res.run.title,
                         res.run.description,
                         res.run.userDefinedKey,
-                        res.file.fileName,
+                        res.file->fileName,
                         pair.first, // count
                         pair.second // length
+                    )
+                );
+            }
+
+            for (auto const& [numPorts, count] : res.numReadPorts) {
+                numReadPortsWriter.writeLine(
+                    fmt::format(
+                        "{},{},{},{},{},{}",
+                        res.run.title,
+                        res.run.description,
+                        res.run.userDefinedKey,
+                        res.file->fileName,
+                        numPorts,
+                        count
+                    )
+                );
+            }
+
+            for (auto const& [numPorts, count] : res.numWritePorts) {
+                numWritePortsWriter.writeLine(
+                    fmt::format(
+                        "{},{},{},{},{},{}",
+                        res.run.title,
+                        res.run.description,
+                        res.run.userDefinedKey,
+                        res.file->fileName,
+                        numPorts,
+                        count
                     )
                 );
             }

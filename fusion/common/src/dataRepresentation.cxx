@@ -1,4 +1,4 @@
-#include "csvHandler.h"
+#include "fileHandler.h"
 #include "dataRepresentation.h"
 #include "instructions.h"
 #include "macros.h"
@@ -9,8 +9,10 @@
 #include <fmt/core.h>
 #include <fstream>
 #include <iterator>
+#include <optional>
 #include <ranges>
 #include <regex>
+#include <string>
 #include <sstream>
 #include <unordered_set>
 #include <vector>
@@ -23,6 +25,41 @@ namespace fusion
 {
 
 using namespace std;
+
+uint32_t Operand::getOffset()
+{
+    regex pattern(R"([0-9]+)\((.*)\)");
+    smatch match;
+    assert(regex_search(op, match, pattern));
+    return stoul(match[0]);
+}
+
+string Operand::toString() const
+{
+    return op;
+}
+
+string Addr::toString() const
+{
+    return fmt::format("{:#04x}", addr);
+}
+
+uint BasicBlock::counter = 0;
+
+string BasicBlock::toString() const
+{
+    return InstrBlock::toString("Basic Block");
+}
+
+// check if two instructions belong in the same critical section
+bool BasicBlock::sameBasicBlock(
+    Instr const& prev,
+    Instr const& next
+)
+{
+    return (prev.count == next.count && !branchInstructions.contains(prev.instr)
+        && Instr::isContiguous(prev, next)) || (prev == next);
+}
 
 bool Instr::dependentOperands(
     Instr const& instruction,
@@ -55,11 +92,11 @@ Instr Instr::parseInstruction(string const& str)
     }
 
     assert(tokens.size() == 5);
-    Instr instr;
-    instr.addr = stoi(tokens[0], nullptr, 16);
-    instr.count = stoi(tokens[1]);
-    instr.label = tokens[2];
-    instr.instr = tokens[3];
+    Instr instr(Addr(tokens[0]), stoi(tokens[1]), tokens[3], {}, tokens[2]);
+    // instr.addr = Addr(tokens[0]);
+    // instr.count = stoi(tokens[1]);
+    // instr.label = tokens[2];
+    // instr.instr = tokens[3];
 
     stringstream operands(tokens[4]);
     while (getline(operands, cell, ' ')) {
@@ -73,12 +110,21 @@ Instr Instr::parseInstruction(string const& str)
 string Instr::toString() const
 {
     return fmt::format(
-        "Instr: addr={:#04x}, count={}, label={}, instr={}, operands=[{}]",
-        addr,
+        "Instr: addr={}, count={}, label={}, instr={}, operands=[{}]",
+        addr.toString(),
         count,
         label,
         instr,
-        boost::algorithm::join(operands, ", ")
+        boost::algorithm::join(
+            operands |
+            boost::adaptors::transformed(
+                [](Operand const& operand)
+                {
+                    return operand.toString();
+                }
+            ),
+            ", "
+        )
     );
 }
 
@@ -87,13 +133,22 @@ ostream& operator<<(ostream& os, Instr const& instr) {
     return os;
 }
 
+InstrBlock::InstrBlock(
+    string label,
+    Addr addr,
+    uint64_t count,
+    vector<shared_ptr<Instr>> instructions
+) : label(label), addr(addr), count(count), instructions(instructions)
+{
+}
+
 string InstrBlock::toString(string name) const
 {
     return fmt::format(
-        "{}: label={}, addr={:#04x}, count={}, instructions={}",
+        "{}: label={}, addr={}, count={}, instructions={}",
         name,
         label,
-        addr,
+        addr.toString(),
         count,
         boost::algorithm::join(
             instructions |
@@ -124,7 +179,7 @@ FileStats::FileStats(File const* file)
     constructCriticalSections(branchInstructions);
 }
 
-string FileStats::toString()
+string FileStats::toString() const
 {
     return fmt::format(
         "avgCriticalSectionSize={}, totalInstructionNum={}",
@@ -233,6 +288,87 @@ void FileStats::constructCriticalSections(unordered_set<string> delimiters)
     // LOG_INFO(fmt::format("Critical Section: before={}, after={}", calculateTotalInstructionNum(), total));
 }
 
+void FileStats::constructControlFlowGraph()
+{
+    // construct the basic blocks unordered map
+    // go through instructions, and create basic blocks
+    // map the basic blocks to their ID in the unordered map
+
+    // a new basic block is created at instructions which satisfy at least one
+    // of the following conditions:
+    // 1. instruction following a branch instruction
+    // 2. function entry point
+    // 3. jump or branch target
+    BasicBlock block;
+    auto record_basic_block = [&]() {
+        controlFlowGraph.basicBlocks[block.id] = block;
+        // need to clear basic block
+    };
+
+    // go through the instructions, and find all branch targets. if a branch
+    // target is in the middle of a basic block, then we split that basic block.
+}
+
+optional<Addr> Instr::findBranchTarget(BasicBlock const& block)
+{
+    assert(branchInstructions.contains(instr));
+
+    if (instr == "beq"  ||
+        instr == "bge"  ||
+        instr == "bgeu" ||
+        instr == "blt"  ||
+        instr == "bltu" ||
+        instr == "bne")
+    {
+        // absolute address at position 2
+        assert(operands[2]);
+        return Addr(operands[2]);
+    }
+
+    if (instr == "c.beqz" || instr == "c.bnez" || instr == "cjal") {
+        // absolute address at position 1
+        assert(operands[1]);
+        return Addr(operands[1]);
+    }
+
+    if (instr == "beqz" ||
+        instr == "bgez" ||
+        instr == "bgtz" ||
+        instr == "blez" ||
+        instr == "bltz" ||
+        instr == "bnez")
+    {
+        // absolute offset at position 1
+        assert(operands[1]);
+        return addr + Addr(operands[1]);
+    }
+
+    if (instr == "j") {
+        // absolute offset at position 0
+        assert(operands[0]);
+        return addr + Addr(operands[0]);
+    }
+
+    if (instr == "cjalr" || instr == "jalr" || instr == "jr") {
+        // combine with previous auipcc instruction to find target address
+        auto const& auipcc = block.instructions.back();
+        assert(auipcc->instr == "auipcc");
+        assert(auipcc->operands[1]);
+        auto base = Addr(auipcc->operands[1]);
+        auto offset = Addr(operands[1].getOffset());
+        return base + offset;
+    }
+
+    // no match was found
+    LOG_ERROR(
+        fmt::format(
+            "could not find branch target from instruction {}",
+            toString()
+        )
+    );
+    return nullopt;
+}
+
 float FileStats::calculateAvgCriticalSectionSize()
 {
     float total = 0;
@@ -282,17 +418,17 @@ bool File::checkContiguousInstructions()
     for (int i = 1; i < instructions.size(); i++) {
         auto currAddr = instructions[i].addr;
         auto prevAddr = instructions[i-1].addr;
-        if (currAddr - prevAddr != 2 && currAddr - prevAddr != 4) {
+        if (currAddr.diff(prevAddr) != 2 && currAddr.diff(prevAddr) != 4) {
             LOG_ERROR(
                 fmt::format(
                     "file {}: instruction {} is more than one instruction away "
-                    "from previous instruction {}: {:x}-{:x}={}",
+                    "from previous instruction {}: {}-{}={}",
                     fileName,
                     instructions[i].instr,
                     instructions[i-1].instr,
-                    currAddr,
-                    prevAddr,
-                    currAddr-prevAddr
+                    currAddr.toString(),
+                    prevAddr.toString(),
+                    currAddr.diff(prevAddr)
                 )
             );
             contiguous = false;

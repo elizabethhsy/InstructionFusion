@@ -1,4 +1,7 @@
 #include "experiment.h"
+#include "fileHandler.h"
+
+#include <boost/range/adaptor/transformed.hpp>
 
 namespace fusion
 {
@@ -6,13 +9,15 @@ namespace fusion
 using namespace std;
 
 ExperimentManager::ExperimentManager(
+    string title,
     vector<string> filepaths,
-    vector<ExperimentRun> const& runs
-) : runs(runs)
+    vector<ExperimentRun> const& runs,
+    string resultsPath
+) : title(title), runs(runs), resultsPath(resultsPath)
 {
     // create the necessary file objects
     for (auto filepath : filepaths) {
-        files.push_back(make_unique<File>(filepath));
+        files.push_back(make_shared<File>(filepath));
     }
 
     // for each file, calculate the statistics and print them out
@@ -35,6 +40,36 @@ ExperimentManager::ExperimentManager(
             totalInstructionNum()
         )
     );
+}
+
+void ExperimentManager::saveConfig()
+{
+    // save a file specifying the config of the experiment within the
+    // experiment results folder
+    FileWriter configWriter(resultsPath + "/config.txt");
+    configWriter.writeLine(fmt::format("TITLE: {}", title));
+    configWriter.writeLine("\nFILES:");
+
+    // output all the file names that were passed in
+    for (auto file : files) {
+        configWriter.writeLine(fmt::format("\t{}", file->fileName));
+    }
+
+    configWriter.writeLine("\nRUNS:");
+    // output the name and description of all the rules that were used
+    // for each run
+    for (auto run : runs) {
+        configWriter.writeLine(
+            fmt::format(
+                "\ttitle: {}\n"
+                "\t\tdescription: {}\n"
+                "\t\tuser defined key: {}",
+                run.title,
+                run.description,
+                run.userDefinedKey
+            )
+        );
+    }
 }
 
 float ExperimentManager::avgCriticalSectionSize()

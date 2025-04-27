@@ -19,12 +19,6 @@ namespace fusion
 
 using namespace std;
 
-struct BasicBlock : InstrBlock
-{
-    string toString() const;
-    static bool sameBasicBlock(Instr const& prev, Instr const& next);
-};
-
 struct ControlFlowPath
 {
     vector<shared_ptr<BasicBlock>> nodes; // list of nodes that form the path
@@ -36,7 +30,7 @@ struct ControlFlowPath
 struct ControlFlowGraph
 {
     vector<shared_ptr<BasicBlock>> basicBlocks;
-    unordered_map<uint32_t, shared_ptr<BasicBlock>> addr_map;
+    unordered_map<Addr, shared_ptr<BasicBlock>> addr_map;
     unordered_map<string, shared_ptr<BasicBlock>> label_map;
 
     // prev BasicBlock -edge count-> next BasicBlock

@@ -12,14 +12,22 @@ namespace fusion
 
 using namespace std;
 
-struct CSVWriter
+struct FileWriter
 {
-    CSVWriter(string fullPath);
+    FileWriter(string fullPath);
 
     void writeLine(string data); // write data to CSV
 private:
     string fullPath;
     ofstream stream;
+};
+
+struct CSVWriter : FileWriter
+{
+    CSVWriter(string fullPath);
+
+    template<typename... Args>
+    void writeLine(Args... args);
 };
 
 // deal with all things CSV related

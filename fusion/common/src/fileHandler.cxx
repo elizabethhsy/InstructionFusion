@@ -1,4 +1,4 @@
-#include "csvHandler.h"
+#include "fileHandler.h"
 #include "dataRepresentation.h"
 
 #include <boost/filesystem.hpp>
@@ -12,7 +12,7 @@ namespace fusion
 
 using namespace std;
 
-CSVWriter::CSVWriter(string fullPath)
+FileWriter::FileWriter(string fullPath)
 {
     // create the directory if necessary
     boost::filesystem::path filePath(fullPath);
@@ -38,7 +38,7 @@ CSVWriter::CSVWriter(string fullPath)
     }
 }
 
-void CSVWriter::writeLine(string data)
+void FileWriter::writeLine(string data)
 {
     stream << data << "\n";
 }
