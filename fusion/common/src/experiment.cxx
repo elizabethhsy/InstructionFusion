@@ -48,7 +48,7 @@ void ExperimentManager::saveConfig()
     // experiment results folder
     FileWriter configWriter(resultsPath + "/config.txt");
     configWriter.writeLine(fmt::format("TITLE: {}", title));
-    configWriter.writeLine("FILES:");
+    configWriter.writeLine("\nFILES:");
 
     // output all the file names that were passed in
     for (auto file : files) {
