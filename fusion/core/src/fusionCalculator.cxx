@@ -22,6 +22,7 @@ NumPorts NumPorts::numPorts(vector<shared_ptr<Instr>> const& block)
     // add the read operands to the set
     for (auto instruction : block) {
         for (int i = 0; i < instruction->operands.size(); i++) {
+            if (instruction->operands[i].isImmediate()) continue;
             if (i == 0) { // destination register, it's a write port
                 write_operands.insert(instruction->operands[i]);
             } else {

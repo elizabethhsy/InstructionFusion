@@ -44,7 +44,7 @@ int main(int argc, char const *argv[])
         name = fmt::format("{}/{}.csv", dirPath, name);
     }
 
-    auto const& baseRuns = celio_2016_rules::baseRuns;
+    auto const& baseRuns = my_rules::baseRuns;
     std::vector<fusion::ExperimentRun> runs = baseRuns;
     
     // std::vector<std::string> keys = {"l", "r", "w"};
@@ -91,30 +91,38 @@ int main(int argc, char const *argv[])
     // }
 
     auto experimentManager = std::make_shared<fusion::ExperimentManager>(
-        "celio 2016 rules",
+        "performance analysis with pipeline starting from scratch",
         fileNames,
         runs,
         resultsPath
     );
-    auto instructionCountResults = experimentManager->run
-        <fusion::InstructionCountExperiment, fusion::FusionResults>
-        ();
-    experimentManager->save
-        <fusion::InstructionCountExperiment, fusion::FusionResults>(
-            instructionCountResults
-        );
-    auto cycleCountResults = experimentManager->run
-        <fusion::PipelineExperiment<fusion::InOrderPipeline>,
-        fusion::PipelineResult>
-        (
-            instructionCountResults
-        );
-    experimentManager->save
-        <fusion::PipelineExperiment<fusion::InOrderPipeline>,
-        fusion::PipelineResult>
-        (
-            cycleCountResults
-        );
+    // auto instructionCountResults = experimentManager->run
+    //     <fusion::InstructionCountExperiment, fusion::FusionResults>
+    //     ();
+    // experimentManager->save
+    //     <fusion::InstructionCountExperiment, fusion::FusionResults>(
+    //         instructionCountResults
+    //     );
+    for (int i = 0; i < 100; i++) {
+        auto instructionCountResults = experimentManager->run
+            <fusion::InstructionCountExperiment, fusion::FusionResults>
+            ();
+        experimentManager->save
+            <fusion::InstructionCountExperiment, fusion::FusionResults>(
+                instructionCountResults
+            );
+    
+        auto cycleCountResults = experimentManager->run
+            <fusion::PipelineExperiment<fusion::InOrderPipeline>,
+            fusion::PipelineResult>
+            ();
+        experimentManager->save
+            <fusion::PipelineExperiment<fusion::InOrderPipeline>,
+            fusion::PipelineResult>
+            (
+                cycleCountResults
+            );
+    }
     
     // auto simulationResults = experimentManager->run
     //     <fusion::SimulationExperiment, fusion::SimulationResults>();

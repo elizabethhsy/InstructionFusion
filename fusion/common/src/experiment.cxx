@@ -1,6 +1,9 @@
 #include "experiment.h"
 #include "fileHandler.h"
 
+#include <fmt/base.h>
+#include <fmt/format.h>
+
 #include <boost/range/adaptor/transformed.hpp>
 
 namespace fusion
@@ -67,6 +70,29 @@ void ExperimentManager::saveConfig()
                 run.title,
                 run.description,
                 run.userDefinedKey
+            )
+        );
+    }
+}
+
+void ExperimentManager::saveStatistics()
+{
+    // save a file specifying the runtime statistics of the experiment within
+    // the experiment results folder
+    FileWriter statisticsWriter(resultsPath + "/statistics.csv");
+    statisticsWriter.writeLine(
+        "title,seconds,num_instructions,instructions_per_second"
+    );
+
+    // record all the runtime statistics
+    for (auto stat : statistics) {
+        statisticsWriter.writeLine(
+            fmt::format(
+                "{},{},{},{}",
+                stat.title,
+                stat.seconds.count(),
+                stat.numInstructions,
+                stat.instructionsPerSecond
             )
         );
     }

@@ -35,7 +35,7 @@ const FusionRule similarCount(float proportion)
                 if (abs(float(blockCount)-instrCount)/max(blockCount, instrCount)
                     > proportion)
                 {
-                    return FusableResult::NOT_FUSABLE;
+                    return FusableResult::START_OF_FUSABLE;
                 }
             }
             return FusableResult::FUSABLE;
@@ -75,7 +75,7 @@ const FusionRule contiguousMemory(
         if (is_contiguous(*block.back(), instruction)) {
             return FusableResult::FUSABLE;
         }
-        return FusableResult::NOT_FUSABLE;
+        return FusableResult::START_OF_FUSABLE;
     }
 );
 
@@ -166,13 +166,6 @@ vector<ExperimentRun> baseRuns = {
     //                 .chain(sameCount)
     //                 .chain(arithmeticEndBranch)
     //         )
-    //     }
-    // },
-    // ExperimentRun{
-    //     .title = "fuse across branches",
-    //     .userDefinedKey = "0",
-    //     .rules = unordered_set<FusionRulePtr>{
-    //         make_shared<FusionRule>(acrossBranches)
     //     }
     // }
 };

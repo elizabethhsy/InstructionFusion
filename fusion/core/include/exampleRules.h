@@ -64,8 +64,9 @@ FusionRule FUSION_CORE_EXPORT maxLength(int length) {
             Instr const& instruction
         ) -> FusableResult
         {
+            if (length == 0) return FusableResult::NOT_FUSABLE;
             return (block.size() < length) ? FusableResult::FUSABLE :
-                FusableResult::NOT_FUSABLE;
+                FusableResult::START_OF_FUSABLE;
         });
 };
 
@@ -76,11 +77,12 @@ FusionRule FUSION_CORE_EXPORT maxReadPorts(int num) {
             Instr const& instruction
         ) -> FusableResult
         {
+            if (num == 0) return FusableResult::NOT_FUSABLE;
             vector<shared_ptr<Instr>> copy = block;
             copy.push_back(make_shared<Instr>(instruction));
             auto ports = NumPorts::numPorts(copy);
             return (ports.read <= num) ? FusableResult::FUSABLE :
-                FusableResult::NOT_FUSABLE;
+                FusableResult::START_OF_FUSABLE;
         }
     );
 }
@@ -92,11 +94,12 @@ FusionRule FUSION_CORE_EXPORT maxWritePorts(int num) {
             Instr const& instruction
         ) -> FusableResult
         {
+            if (num == 0) return FusableResult::NOT_FUSABLE;
             auto copy = block;
             copy.push_back(make_shared<Instr>(instruction));
             auto ports = NumPorts::numPorts(copy);
             return (ports.write <= num) ? FusableResult::FUSABLE :
-                FusableResult::NOT_FUSABLE;
+                FusableResult::START_OF_FUSABLE;
         }
     );
 }
@@ -107,9 +110,12 @@ FusionRule FUSION_CORE_EXPORT independent(
         unordered_set<Operand> operands;
         for (auto const& instrPtr : block) {
             for (auto const& op : instrPtr->operands) {
-                if (operands.contains(op)) return FusableResult::NOT_FUSABLE;
-                operands.insert(op);
+                if (!op.isImmediate()) operands.insert(op);
             }
+        }
+        for (auto const& op : instruction.operands) {
+            if (operands.contains(op)) return FusableResult::START_OF_FUSABLE;
+            if (!op.isImmediate()) operands.insert(op);
         }
         return FusableResult::FUSABLE;
     }
@@ -121,7 +127,7 @@ FusionRule FUSION_CORE_EXPORT sameCount(
         if (block.size() > 0) {
             auto const& lastInstr = block.back();
             if (lastInstr->count != instruction.count) {
-                return FusableResult::NOT_FUSABLE;
+                return FusableResult::START_OF_FUSABLE;
             }
         }
         return FusableResult::FUSABLE;

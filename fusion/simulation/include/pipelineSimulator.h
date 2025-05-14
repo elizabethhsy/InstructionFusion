@@ -113,6 +113,19 @@ struct PipelineExperiment
         return experimentResults;
     }
 
+    // if instruction count experiment was not previously run, then run it
+    // before proceeding
+    template<typename... Args>
+    ExperimentResults<PipelineResult> run(
+        Args... args
+    )
+    {
+        auto instructionCountResults = manager->run
+            <fusion::InstructionCountExperiment, fusion::FusionResults>
+            ();
+        return run(instructionCountResults);
+    }
+
     void save(ExperimentResults<PipelineResult> const& results) {
         auto resultsPath = manager->resultsPath;
         FileWriter cyclesWriter(resultsPath + "/cycles.csv");

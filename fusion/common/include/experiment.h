@@ -3,8 +3,10 @@
 #include <fusion_common_export.h>
 
 #include "fusion.h"
+#include "statistics.h"
 
 #include <boost/range/adaptor/transformed.hpp>
+#include <boost/type_index.hpp>
 
 namespace fusion
 {
@@ -88,8 +90,18 @@ struct FUSION_COMMON_EXPORT ExperimentManager :
 
     template<class Experiment, typename Result, typename... Args>
     ExperimentResults<Result> run(Args... args) {
+        auto t0 = std::chrono::high_resolution_clock::now();
         Experiment experiment(this->shared_from_this());
         auto results = experiment.run(std::forward<Args>(args)...);
+        auto t1 = std::chrono::high_resolution_clock::now();
+        statistics.push_back(
+            RuntimeStats(
+                boost::typeindex::type_id<Experiment>().pretty_name(),
+                t1-t0,
+                totalInstructionNum()
+            )
+        );
+        totalDynamicInstructions += totalInstructionNum();
         return results;
     }
 
@@ -102,12 +114,26 @@ struct FUSION_COMMON_EXPORT ExperimentManager :
     }
 
     void saveConfig();
-    void reportRunningStats();
+    void saveStatistics();
+
+    ~ExperimentManager()
+    {
+        auto endTime = std::chrono::high_resolution_clock::now();
+        statistics.push_back(
+            RuntimeStats(title, endTime-startTime, totalDynamicInstructions)
+        );
+        this->saveStatistics();
+    }
 
     string title;
     vector<shared_ptr<File>> files;
     vector<ExperimentRun> const& runs;
     string resultsPath;
+    vector<RuntimeStats> statistics;
+    
+    std::chrono::high_resolution_clock::time_point startTime =
+        std::chrono::high_resolution_clock::now();
+    uint64_t totalDynamicInstructions = 0;
 private:
     float avgCriticalSectionSize();
     uint64_t totalInstructionNum();

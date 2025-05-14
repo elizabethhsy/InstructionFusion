@@ -34,6 +34,16 @@ uint32_t Operand::getOffset()
     return stoul(match[0]);
 }
 
+bool Operand::isImmediate() const
+{
+    for (char c : op) {
+        if (!isdigit(c)) {
+            return false;
+        }
+    }
+    return true;
+}
+
 string Operand::toString() const
 {
     return op;

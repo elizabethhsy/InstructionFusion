@@ -30,6 +30,7 @@ struct Operand
 
     uint32_t getOffset();
     string toString() const;
+    bool isImmediate() const;
 
     bool operator==(Operand const& other) const {
         return op == other.op;

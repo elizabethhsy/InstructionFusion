@@ -16,6 +16,10 @@ set(CMAKE_CXX_FLAGS "-O3 -Wall -Wextra")
 set(CMAKE_CXX_FLAGS_DEBUG "-g -Wall -Wextra")
 
 add_library(${PROJECT_NAME} INTERFACE)
+target_include_directories(fusion INTERFACE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>)
+
 target_link_libraries(${PROJECT_NAME} INTERFACE
     common
     core

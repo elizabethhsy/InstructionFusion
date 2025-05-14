@@ -1,0 +1,3 @@
+addr,count,label,instruction,operands
+0xfc86c,64,,addi,a2 zero 27
+0xfc88c,12,,bge,a2 s1 28

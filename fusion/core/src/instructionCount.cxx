@@ -1,5 +1,6 @@
 #include "instructionCount.h"
 #include "fusion.h"
+#include "statistics.h"
 
 #include <fileHandler.h>
 #include <instructions.h>
@@ -82,7 +83,7 @@ ExperimentResults<FusionResults> InstructionCountExperiment::run()
             )
         );
     };
-
+    
     for (auto const& run : manager->runs) {
         run_experiment(run);
     }
